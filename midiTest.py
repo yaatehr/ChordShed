@@ -1,53 +1,43 @@
-"""Show how to receive MIDI input by setting a callback function."""
-
-from __future__ import print_function
-
-import logging
-import sys
+import mido
+# from mido.ports import open_input
+from mido.midifiles import MidiFile
 import time
-from rtmidi.midiutil import open_midiinput
-import numpy as np
-# np.array([133, 53, 234, 241])
-# astype(np.uint8).data.hex()
-'8535eaf1'
-
-log = logging.getLogger('midiin_callback')
-logging.basicConfig(level=logging.DEBUG)
 
 
-class MidiInputHandler(object):
-    def __init__(self, port):
-        self.port = port
-        self._wallclock = time.time()
 
-    def __call__(self, event, data=None):
-        message, deltatime = event
-        self._wallclock += deltatime
-        print("[%s] @%0.6f %r" % (self.port, self._wallclock, message))
-rtmidi.
+try: 
+    inport = mido.open_input()
+    msg = inport.receive()
+except:
+    print('no input attached')
 
-# Prompts user for MIDI input port, unless a valid port number or name
-# is given as the first argument on the command line.
-# API backend defaults to ALSA on Linux.
-port = sys.argv[1] if len(sys.argv) > 1 else None
 
-try:
-    midiin, port_name = open_midiinput(port)
-except (EOFError, KeyboardInterrupt):
-    sys.exit()
+class notes(object):
+    clock = time.clock
+    def __init__(self):
+        # self.noteBuffer = []
+        self.playingNotes = dict() # holds a tuple of what notes are playing and how long they have been playing
+        # better way to do this?
+        self.playedNotes = []
 
-print("Attaching MIDI input callback handler.")
-midiin.set_callback(MidiInputHandler(port_name))
+    def callback(self, message):
+        if message.type == 'note_on':
+            if message.note not in self.playingNotes.keys():
+                self.playingNotes.update({message.note: self.clock()})
+        elif message.type == 'note_off':
+            if message.note in self.playingNotes.keys():
+                start = self.playingNotes.pop(message.note)
+                self.playedNotes.append((message, self.clock() - start))
 
-print("Entering main loop. Press Control-C to exit.")
-try:
-    # Just wait for keyboard interrupt,
-    # everything else is handled via the input callback.
-    while True:
-        time.sleep(1)
-except KeyboardInterrupt:
-    print('')
-finally:
-    print("Exit.")
-    midiin.close_port()
-    del midiin
+
+
+
+note_class = notes()
+
+
+major_chords = MidiFile('./major_chords.mid')
+
+#parsing mido.Message.from_bytes()
+#  mido.parse_all([0x92, 0x10, 0x20, 0x82, 0x10, 0x20])
+# p.feed_byte(0x90) for callback?
+# make a buffer for midi inputs
