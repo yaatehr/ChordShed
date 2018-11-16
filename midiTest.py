@@ -5,13 +5,6 @@ import time
 
 
 
-try: 
-    inport = mido.open_input()
-    msg = inport.receive()
-except:
-    print('no input attached')
-
-
 class notes(object):
     clock = time.clock
     def __init__(self):
@@ -31,8 +24,15 @@ class notes(object):
 
 
 
-
-note_class = notes()
+try: 
+    note_class = notes()
+    inport = mido.open_input(virtual=True, name="testInput", callback=note_class.callback)
+    print('port initialized')
+    # msg = inport.receive()
+except Exception as e:
+    print('no input attached ', e)
+finally:
+    del inport
 
 
 major_chords = MidiFile('./major_chords.mid')
