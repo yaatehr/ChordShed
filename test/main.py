@@ -53,6 +53,7 @@ class MainWidget(BaseWidget) :
         # Create Now Bar to scroll across Gem Bar
         self.r = NowBar()
         self.canvas.add(self.r)
+        
         '''
         # set up audio
         self.audio = AudioController(fp_mtaf)
