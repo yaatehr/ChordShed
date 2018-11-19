@@ -18,6 +18,7 @@ from kivy.clock import Clock as kivyClock
 from kivy.core.window import Window
 
 from rep.nowbar import NowBar
+from rep.gembar import GemBar
 
 import random
 import numpy as np
@@ -44,11 +45,13 @@ DT = 2
 class MainWidget(BaseWidget) :
     def __init__(self):
         super(MainWidget, self).__init__()
-        # Widget info
-        self.info = topleft_label()
-        self.add_widget(self.info)   
         
-        self.r = NowBar(100)
+        # Create Gem Bar over which our Now Bar cursor will scroll
+        self.g = GemBar()
+        self.canvas.add(self.g)
+        
+        # Create Now Bar to scroll across Gem Bar
+        self.r = NowBar()
         self.canvas.add(self.r)
         '''
         # set up audio
