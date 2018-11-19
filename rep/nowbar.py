@@ -1,14 +1,22 @@
+import sys
+sys.path.append('..')
+from common.gfxutil import CEllipse
+
 from kivy.graphics.instructions import InstructionGroup
-from kivy.graphics import Color, Rectangle
+from kivy.graphics import Color
 
 from kivy.core.window import Window
 from kivy.clock import Clock as kivyClock
 
-from . import constants
+from .constants import *
 
 
-
-
+'''
+CRectangle ->
+ - Similar to CEllipse (in nature, not in implementation)
+ - Simple implementation for drawing a Centered Rectangle
+'''
+'''
 class CRectangle(InstructionGroup):
     def __init__(self, pos, size, color=(1,1,1)):
         super(CRectangle, self).__init__()
@@ -37,27 +45,35 @@ class CRectangle(InstructionGroup):
     def set_color(self, color):
         self.color.rgb = color
 
+'''
 
 
-
-
+'''
+NowBar ->
+ - Moving cursor that will highlight what gems need to be played
+ - Moves across the screen (currently at predetermined rate), will be updated later
+ - Once end of path is reached, it will wrap back around to beginning of path
+'''
 class NowBar(InstructionGroup):
-    def __init__(self, y):
+    def __init__(self):
         super(NowBar, self).__init__()
         
         # color the cursor grey
-        self.color = (.5, .5, .5)
+        self.color = kCursorDefaultColor
+        self.add( Color(*self.color) ) 
         
         # save position
-        self.xpos = 20
-        self.ypos = y
+        self.xpos = kTrackLowerLimit
+        self.ypos = kGemBarYPos
         
         # draw the cursor as a centered rectangle
-        self.cursor = CRectangle( (self.xpos, self.ypos), (25, 50), self.color )
+        #self.cursor = CRectangle( (self.xpos, self.ypos), (25, 50), self.color )
+        cpos = (self.xpos, self.ypos)
+        self.cursor = CEllipse(cpos=cpos, csize=kCursorSize) 
         self.add(self.cursor)
         
-        # limits that NowBar will be moving around
-        self.lim_lo = constants.kTrackLowerLimit
+        # limits that NowBar will be moving within, correlates with length of gem bar
+        self.lim_lo = kTrackLowerLimit
         self.lim_hi = Window.width - self.lim_lo
         
         # initialize position of the NowBar
@@ -65,12 +81,13 @@ class NowBar(InstructionGroup):
         
     def update_pos(self, new_xpos):
         # update the barline to its new y position
-        # x should NOT change
+        # y should remain constant
         self.cursor.set_cpos( (new_xpos, self.ypos) )
         if not self.in_bounds():
             self.reset()
         self.xpos = self.cursor.get_cpos()[0]
-          
+    
+    # move cursor back to beginning of the screen      
     def reset(self):
         self.cursor.set_cpos( (self.lim_lo, self.ypos) )
     
