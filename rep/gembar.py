@@ -54,7 +54,12 @@ class GemBar(InstructionGroup):
             tick = Tick(x, color, big=big)
             self.add(tick)
             self.ticks.append(tick)
-    
+        
     def disappear(self, active):
         for tick in self.ticks:
             tick.disappear(active)
+            
+            
+            
+            
+            
