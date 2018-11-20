@@ -8,7 +8,85 @@ from kivy.graphics import Color
 from kivy.core.window import Window
 from kivy.clock import Clock as kivyClock
 
+from math import cos, exp
+
 from .constants import *
+
+
+'''
+NowBar ->
+ - Moving cursor that will highlight what gems need to be played
+ - Moves across the screen (currently at predetermined rate), will be updated later
+ - Once end of path is reached, it will wrap back around to beginning of path
+'''
+class NowBar(InstructionGroup):
+    def __init__(self):
+        super(NowBar, self).__init__()
+        
+        # color the cursor grey
+        self.color = kCursorDefaultColor
+        self.add( Color(*self.color) ) 
+        
+        # save position and size
+        self.xpos = kTrackLowerLimit
+        self.ypos = kGemBarYPos
+        self.csize = kCursorSize
+        
+        # draw the cursor as a circle
+        cpos = (self.xpos, self.ypos)
+        self.cursor = CEllipse(cpos=cpos, csize=self.csize)
+        self.add(self.cursor)
+        
+        # limits that NowBar will be moving within, correlates with length of gem bar
+        self.lim_lo = kTrackLowerLimit
+        self.lim_hi = Window.width - self.lim_lo
+        
+        # save time for animation, by starting large, the cursor will maintain its size
+        self.t = kCursorMaxTime
+        
+        # initialize position of the NowBar
+        self.on_update()
+        
+    def update_pos(self):
+        # update the barline to its new y position
+        # y should remain constant
+        curr_xpos = self.cursor.get_cpos()[0]
+        new_xpos = curr_xpos + 2
+        self.cursor.set_cpos( (new_xpos, self.ypos) )
+        if not self.in_bounds():
+            self.reset()
+        self.xpos = self.cursor.get_cpos()[0]
+        
+    # move cursor back to beginning of the screen      
+    def reset(self):
+        self.cursor.set_cpos( (self.lim_lo, self.ypos) )
+        
+    # animate
+    def animate(self):
+        new_size = kCursorSize[0] * exp(-kCursorDecayRate*self.t) * cos(kCursorOscRate*self.t) + kCursorSize[0]
+        self.csize = (new_size, new_size)
+        self.cursor.csize = self.csize
+        self.t = kCursorMaxTime if (self.t + kDt >= kCursorMaxTime) else self.t + kDt 
+    
+    # reset time for animating key presses, can call this function when input is recorded   
+    def time_reset(self):
+        self.t = 0
+    
+    # find out if the barline is on screen, if so we will draw it
+    def in_bounds(self):
+        xpos = self.cursor.get_cpos()[0]
+        return True if self.lim_lo <= xpos <= self.lim_hi else False
+    
+    # update position and update animation
+    def on_update(self):
+        # return whether the bar is active or inactive
+        self.update_pos()
+        self.animate()
+        
+        
+
+
+
 
 
 '''
@@ -47,58 +125,4 @@ class CRectangle(InstructionGroup):
 
 '''
 
-
-'''
-NowBar ->
- - Moving cursor that will highlight what gems need to be played
- - Moves across the screen (currently at predetermined rate), will be updated later
- - Once end of path is reached, it will wrap back around to beginning of path
-'''
-class NowBar(InstructionGroup):
-    def __init__(self):
-        super(NowBar, self).__init__()
-        
-        # color the cursor grey
-        self.color = kCursorDefaultColor
-        self.add( Color(*self.color) ) 
-        
-        # save position
-        self.xpos = kTrackLowerLimit
-        self.ypos = kGemBarYPos
-        
-        # draw the cursor as a centered rectangle
-        #self.cursor = CRectangle( (self.xpos, self.ypos), (25, 50), self.color )
-        cpos = (self.xpos, self.ypos)
-        self.cursor = CEllipse(cpos=cpos, csize=kCursorSize) 
-        self.add(self.cursor)
-        
-        # limits that NowBar will be moving within, correlates with length of gem bar
-        self.lim_lo = kTrackLowerLimit
-        self.lim_hi = Window.width - self.lim_lo
-        
-        # initialize position of the NowBar
-        self.on_update()
-        
-    def update_pos(self, new_xpos):
-        # update the barline to its new y position
-        # y should remain constant
-        self.cursor.set_cpos( (new_xpos, self.ypos) )
-        if not self.in_bounds():
-            self.reset()
-        self.xpos = self.cursor.get_cpos()[0]
-    
-    # move cursor back to beginning of the screen      
-    def reset(self):
-        self.cursor.set_cpos( (self.lim_lo, self.ypos) )
-    
-    # find out if the barline is on screen, if so we will draw it
-    def in_bounds(self):
-        xpos = self.cursor.get_cpos()[0]
-        return True if self.lim_lo <= xpos <= self.lim_hi else False
-    
-    def on_update(self):
-        # return whether the bar is active or inactive
-        curr_xpos = self.cursor.get_cpos()[0]
-        new_xpos = curr_xpos + 2
-        self.update_pos(new_xpos)
     

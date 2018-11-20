@@ -19,6 +19,7 @@ from kivy.core.window import Window
 
 from rep.nowbar import NowBar
 from rep.gembar import GemBar
+from rep.constants import *
 
 import random
 import numpy as np
@@ -54,6 +55,8 @@ class MainWidget(BaseWidget) :
         self.r = NowBar()
         self.canvas.add(self.r)
         
+        self.a = True
+        
         '''
         # set up audio
         self.audio = AudioController(fp_mtaf)
@@ -71,18 +74,17 @@ class MainWidget(BaseWidget) :
         
         # keep state
         self.paused = True
-
+    '''
     def on_key_down(self, keycode, modifiers):
         # play / pause toggle
         if keycode[1] == 'p':
-            self.paused = not self.paused
-
-        # button down
-        if not self.paused:
-            button_idx = lookup(keycode[1], '12345', (0,1,2,3,4))
-            if button_idx != None:
-                self.player.on_button_down(button_idx)
-
+            self.a = not self.a
+            self.g.disappear(self.a)
+        
+        if keycode[1] == 't':
+            self.r.time_reset()
+        
+    '''
     def on_key_up(self, keycode):
         # button up
         button_idx = lookup(keycode[1], '12345', (0,1,2,3,4))
