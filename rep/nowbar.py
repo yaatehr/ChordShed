@@ -6,7 +6,6 @@ from kivy.graphics.instructions import InstructionGroup
 from kivy.graphics import Color
 
 from kivy.core.window import Window
-from kivy.clock import Clock as kivyClock
 
 from math import cos, exp
 
@@ -20,15 +19,16 @@ NowBar ->
  - Once end of path is reached, it will wrap back around to beginning of path
 '''
 class NowBar(InstructionGroup):
-    def __init__(self):
+    def __init__(self, bpm):
         super(NowBar, self).__init__()
         
         # color the cursor grey
-        self.color = kCursorDefaultColor
-        self.add( Color(*self.color) ) 
+        self.color = Color(*kCursorDefaultColor)
+        self.add( self.color ) 
         
         # save position and size
-        self.xpos = kTrackLowerLimit
+        self.xpos = PlaceOnBeat(.75) #kTrackLowerLimit
+        self.xstart = self.xpos
         self.ypos = kGemBarYPos
         self.csize = kCursorSize
         
@@ -44,16 +44,31 @@ class NowBar(InstructionGroup):
         # save time for animation, by starting large, the cursor will maintain its size
         self.t = kCursorMaxTime
         
-        # initialize position of the NowBar
-        self.on_update()
+        # save speed of the cursor
+        self.v = BpmToPixels(bpm)
         
-    def update_pos(self):
+        # initialize position of the NowBar
+        self.active = True
+        
+        # hold callback that will be used to indicate reaching the end of the line
+        self.end_cb = None
+        
+    
+    def install_cb(self, cb):
+        self.end_cb = cb 
+        
+    def change_bpm(self, bpm):
+        self.v = BpmToPixels(bpm)   
+    
+    def update_pos(self, dt):
         # update the barline to its new y position
         # y should remain constant
         curr_xpos = self.cursor.get_cpos()[0]
-        new_xpos = curr_xpos + 2
+        new_xpos = curr_xpos + self.v * dt
         self.cursor.set_cpos( (new_xpos, self.ypos) )
         if not self.in_bounds():
+            if self.end_cb:
+                self.end_cb()
             self.reset()
         self.xpos = self.cursor.get_cpos()[0]
         
@@ -61,12 +76,16 @@ class NowBar(InstructionGroup):
     def reset(self):
         self.cursor.set_cpos( (self.lim_lo, self.ypos) )
         
+    def restart(self):
+        self.cursor.set_cpos( (self.xstart, self.ypos) )
+        self.activate(True)
+        
     # animate
-    def animate(self):
-        new_size = kCursorSize[0] * exp(-kCursorDecayRate*self.t) * cos(kCursorOscRate*self.t) + kCursorSize[0]
+    def animate(self, dt):
+        new_size = kCursorSize[0] * exp(-kCursorDecayRate*self.t) * cos(kCursorOscRate*self.t) + kCursorSize[0] 
         self.csize = (new_size, new_size)
         self.cursor.csize = self.csize
-        self.t = kCursorMaxTime if (self.t + kDt >= kCursorMaxTime) else self.t + kDt 
+        self.t = kCursorMaxTime if (self.t + dt >= kCursorMaxTime) else self.t + dt 
     
     # reset time for animating key presses, can call this function when input is recorded   
     def time_reset(self):
@@ -77,11 +96,15 @@ class NowBar(InstructionGroup):
         xpos = self.cursor.get_cpos()[0]
         return True if self.lim_lo <= xpos <= self.lim_hi else False
     
+    def activate(self, active):
+        self.active = active
+    
     # update position and update animation
-    def on_update(self):
+    def on_update(self, dt):
         # return whether the bar is active or inactive
-        self.update_pos()
-        self.animate()
+        self.update_pos(dt)
+        self.animate(dt)
+        return self.active
         
         
 

@@ -1,9 +1,6 @@
 from kivy.graphics.instructions import InstructionGroup
 from kivy.graphics import Color, Line
 
-from kivy.core.window import Window
-from kivy.clock import Clock as kivyClock
-
 from .constants import *
 
 '''
@@ -26,12 +23,6 @@ class Tick(InstructionGroup):
         points = (x, y_lo, x, y_hi)
         self.tick = Line(points=points, width=kTickWidth)
         self.add(self.tick)
-        
-    # keep state for whether or not the line should be visible 
-    def disappear(self, active):
-        self.color.a = int( not active )
-
-
 
 
 
@@ -55,9 +46,15 @@ class GemBar(InstructionGroup):
             self.add(tick)
             self.ticks.append(tick)
         
-    def disappear(self, active):
-        for tick in self.ticks:
-            tick.disappear(active)
+        # keep track of state of GemBar as a whole
+        # when inactive, should be removed from AnimGroup
+        self.active = True
+    
+    def activate(self, active):
+        self.active = active
+    
+    def on_update(self, dt):
+        return self.active
             
             
             
