@@ -16,30 +16,21 @@ from kivy.graphics import PushMatrix, PopMatrix, Translate, Scale, Rotate
 from kivy.clock import Clock as kivyClock
 
 from kivy.core.window import Window
+from kivy.core.text import Label as CoreLabel
+
 
 from rep.nowbar import NowBar
 from rep.gembar import GemBar
+from rep.gem import Gem
+from rep.gamedisplay import GameDisplay
+
 from rep.constants import *
+from rep.patterns import *
 
 import random
 import numpy as np
 import bisect
 
-# x coordinates for barlines
-X1 = 50
-X2 = Window.width - 50
-
-# partial filepath to song background and solo
-fp_mtaf = "../gh-audio/MoreThanAFeeling_"
-
-# filepaths to annotations
-fp_mtaf_solo = "mtaf-annot.txt"
-fp_mtaf_bg = "mtaf-annot-barline.txt"
-
-# constants used drawing gems and barlines in the correct place
-Y_nb = 50
-dy = Window.height - Y_nb
-DT = 2
 
 
 
@@ -47,15 +38,24 @@ class MainWidget(BaseWidget) :
     def __init__(self):
         super(MainWidget, self).__init__()
         
+        #self.bg = Rectangle(pos=(0,0), size=(Window.width, Window.height), color=Color(*(1,1,1)) )
+        #self.canvas.add(self.bg)
+        
         # Create Gem Bar over which our Now Bar cursor will scroll
-        self.g = GemBar()
-        self.canvas.add(self.g)
+        self.gb = GemBar()
+        #self.canvas.add(self.gb)
+        
+        # Create Gem
+        self.g = Gem('t', 1)
+        #self.canvas.add(self.g)
         
         # Create Now Bar to scroll across Gem Bar
-        self.r = NowBar()
-        self.canvas.add(self.r)
+        self.nb = NowBar(100)
+        #self.canvas.add(self.nb)
         
-        self.a = True
+        self.gm = GameDisplay(self.nb, self.gb)
+        self.canvas.add(self.gm)
+        
         
         '''
         # set up audio
@@ -76,13 +76,11 @@ class MainWidget(BaseWidget) :
         self.paused = True
     '''
     def on_key_down(self, keycode, modifiers):
-        # play / pause toggle
-        if keycode[1] == 'p':
-            self.a = not self.a
-            self.g.disappear(self.a)
-        
+        pass
+               
         if keycode[1] == 't':
-            self.r.time_reset()
+            self.gm.load_pattern(Test_Pattern)
+        
         
     '''
     def on_key_up(self, keycode):
@@ -92,7 +90,9 @@ class MainWidget(BaseWidget) :
             self.player.on_button_up(button_idx)
     '''
     def on_update(self) :
-        self.r.on_update()
+        self.gm.on_update()
+        #self.nb.on_update()
+        #self.g.on_update(kDt)
         '''
         if not self.paused:
             self.player.on_update()

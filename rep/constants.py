@@ -5,20 +5,22 @@ of gems, gem bar, and now bar
 import numpy as np
 
 from kivy.core.window import Window
-from kivy.clock import Clock as kivyClock
 
-kDt = kivyClock.frametime
 
 # gem bar positioning
-kTrackLowerLimit = 20             # x position lower bound of the gem bar
-kGemBarYPos = Window.height - 40  # y position where gem bar will be located
+kTrackLowerLimit = 20                   # x position lower bound of the gem bar
+kYOffset = 40
+kGemBarYPos = Window.height - kYOffset  # y position where gem bar will be located
+
 
 # Constants for cursor/now bar
-kCursorSize = (40, 40)                  # 
-kCursorDefaultColor = (1,1,1)           # 
-kCursorDecayRate = 1000                 # 
-kCursorOscRate = kCursorDecayRate * 2   # 
+kCursorSize = (40, 40)                  # size of the cursor
+kCursorDefaultColor = (1,1,0)           # cursor color
+kCursorDecayRate = 1000                 # decay of cursor animation
+kCursorOscRate = kCursorDecayRate * 2   # speed of animation
 kCursorMaxTime = 20                     # 
+
+
 
 # Constants for ticks
 kBigTickLength = 20                                 # vertical length of downbeat ticks
@@ -26,9 +28,25 @@ kSmallTickLength = kBigTickLength // 4              # vertical length of offbeat
 kTickWidth = 5                                      # width of ticks
 kTickSpacing = Window.width - 2 * kTrackLowerLimit  # horizontal spacing of ticks
 kTickDefaultColor = (.5, .5, .5)                    # color for default tick color (grey)
-kTickInactiveColor = (.2, .3, .4)                   # color for ticks that will NEVER have gems
+kTickInactiveColor = (.2, .3, .5)                   # color for ticks that will NEVER have gems
 kInactiveTicks = (0,1,15,16)                        # index numbers of inactive ticks 
 
 
 # Functions and constants for Gems
-PlaceGemOnBeat = lambda beat : (4*beat-2)/16 * kTickSpacing + kTrackLowerLimit
+kGemSize = (50, 50)
+kGemDefaultColor = (1,0,1,1)
+kGemHit = (0,1,0)
+kGemMiss = (1,0,0)
+kGemExitVelocity = 1000
+kGemDecayRate = 2#10
+kGemGrowthRate = 5
+
+
+# Functions and constants for GameDisplay
+
+
+
+# Useful lambda functions
+PlaceOnBeat = lambda beat : (4*beat-2)/16 * kTickSpacing + kTrackLowerLimit
+BpmToPixels = lambda bpm : kTickSpacing * bpm / 240
+
