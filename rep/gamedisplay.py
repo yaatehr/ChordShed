@@ -65,7 +65,13 @@ class GameDisplay(InstructionGroup):
         self.objects.on_update()
     
     
-    
+    def getAllGems(self):
+        output = []
+        if not self.pattern:
+            return output
+        while self.pattern.next_bar():
+            output.extend(self.pattern.generate_bar())
+        return output
     
     def _draw_new_gems(self):
         generate = self.pattern.next_bar()

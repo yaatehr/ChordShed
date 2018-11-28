@@ -116,6 +116,7 @@ class MainWidget(BaseWidget) :
     def on_key_down(self, keycode, modifiers):
         if keycode[1] == 't':
             self.player.load_pattern(Test_Pattern)
+            print('loading stuff')
             
         elif keycode[1] == 'p':
             self.player.pause_game()
@@ -123,7 +124,7 @@ class MainWidget(BaseWidget) :
         elif keycode[1] == 'o':
             self.player.play_game()
 
-        elif keycode[1] == 'r' and self.midiInput is None:
+        elif keycode[1] == 'c' and self.midiInput is None:
             self.initialize_controller()
             # self.synth.start()
 
@@ -530,5 +531,5 @@ class Player(object):
                 
         
 '''
-if __name__ == '__main__':
-    run(MainWidget)
+# if __name__ == '__main__':
+#     run(MainWidget)

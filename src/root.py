@@ -23,6 +23,7 @@ from kivy.graphics.instructions import InstructionGroup
 from kivy.graphics import Color, Ellipse, Line, Rectangle, Mesh
 from kivy.graphics import PushMatrix, PopMatrix, Translate, Scale, Rotate
 from test.main import MainWidget as GameScreen
+from src.score import ScoreScreen
 
 
 
@@ -61,7 +62,7 @@ class RootWidget(BaseWidget) :
         elif screenName == 'game':
             return GameScreen(self.switchScreen)
         elif screenName == 'score':
-            return ScoreScreen(self.scoreCard,self.switchScreen)
+            return ScoreScreen(callBack=self.switchScreen)
         else:
             return HomeScreen(self.switchScreen)
     def on_key_up(self, keycode):

@@ -157,7 +157,7 @@ class ScoreScreen(BaseWidget):
         buttonSize = (w, w//3)
         buttonAnchor = (3*Window.width//4, Window.height//4)
         self.scoreCard = scoreCard
-        titleString= "scoreCard"
+        titleString= "Score Card"
         title = Rectangle(pos=(Window.width//4, 3*Window.height//4), size=(2*Window.width//4, Window.height//5))
         label = CoreLabel(text=titleString, font_size=56)
         label.refresh()
@@ -193,6 +193,9 @@ class ScoreScreen(BaseWidget):
     def on_update(self):
         self.objects.on_update()
         # print('homescreenUpdate')
+    
+    def on_key_down(self, keycode, modifiers):
+        pass
 
 
 
@@ -201,4 +204,4 @@ class ScoreScreen(BaseWidget):
 
 
 
-run(ScoreScreen)
+# run(ScoreScreen)

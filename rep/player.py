@@ -3,7 +3,7 @@ from kivy.core.image import Image
 
 from rep.constants import *
 from src.notedetector import NoteDetector
-
+from src.score import SaveData
 class Player(object):
     def __init__(self, cursor, display, targetCallback = None):
         super(Player, self).__init__()
@@ -14,7 +14,7 @@ class Player(object):
         
         self.play = False
         self.iter = 0
-        
+        self.saveData = None
         self.pattern = None
         self.update_target = targetCallback
 
@@ -33,7 +33,9 @@ class Player(object):
             
     def play_game(self):
         self.play = True
-        
+        if not self.saveData:
+            self.saveData = SaveData('test', self.display.getAllGems())
+
     def pause_game(self):
         self.play = False
         
@@ -47,8 +49,9 @@ class Player(object):
     def on_hit(self):
         if self._temporal_hit():
             print('past temp hit')
-            if len(self.display.active_gems) > 1:
-                print('replacement gem')
+            if self.saveData:
+                self.saveData.addGem(self.targetGem, True)
+            self.targetGem = None
                 # self.gem.a
                 # self.update_target(self.gem)
         self.score += 1
@@ -79,6 +82,9 @@ class Player(object):
             if not gem.done and gem.get_cpos()[0] < cursor_xpos - self.slack_win:
                 self.score -= 1
                 gem.on_miss()
+                if self.saveData:
+                    self.saveData.addGem(self.targetGem, False)
+                self.targetGem = None
 
     def _find_nearest_gem(self):
         if not self.display.active_gems:
@@ -108,6 +114,5 @@ class Player(object):
             # if chord == str(gem.get_chord()):
             #     hit = True
                 self.targetGem.on_hit()
-                self.targetGem = None
                 return True
         return False
