@@ -108,7 +108,7 @@ class KeyboardGui(InstructionGroup):
         self.border = [topRect, botRect, leftRect, rightRect]
         [self.add(x) for x in self.border]
 
-    def on_update(self):
+    def on_update(self, dt=None):
         self.objects.on_update()
         self.updateGui()
 

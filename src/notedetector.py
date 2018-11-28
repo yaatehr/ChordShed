@@ -3,10 +3,9 @@ import mido
 from mido import Message, MidiFile, MidiTrack
 import numpy as np
 import time
-from LRUDict import LRUDict
-
-
-
+from src.LRUDict import LRUDict
+# import sys
+# sys.path.append('..')
 
 
 class NoteDetector(object):

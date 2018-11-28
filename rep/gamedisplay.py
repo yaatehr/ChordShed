@@ -8,7 +8,7 @@ from time import sleep
 
 
 class GameDisplay(InstructionGroup):
-    def __init__(self, cursor, gembar, mode=None):
+    def __init__(self, cursor, gembar, detector, pianoTutor=None, mode=None):
         super(GameDisplay, self).__init__()
         
         # create AnimGroup to take care of drawing gems
@@ -18,6 +18,7 @@ class GameDisplay(InstructionGroup):
         # add the NowBar cursor and the gembar
         self.gembar = gembar
         self.cursor = cursor
+        self.detector = detector
                 
         # save the gem pattern to be used
         self.pattern = None
@@ -26,7 +27,7 @@ class GameDisplay(InstructionGroup):
         self.active_gems = []
         
         # create an instance of the tutor to be drawn
-        self.tutor = None 
+        self.tutor = pianoTutor 
         
         # save game state
         self.game_over = False
@@ -38,6 +39,7 @@ class GameDisplay(InstructionGroup):
         self.game_over = False
         self.objects.add( self.gembar )
         self.objects.add( self.cursor )
+        self.objects.add(self.tutor)
     
     def load_pattern(self, pattern):
         self.pattern = pattern
