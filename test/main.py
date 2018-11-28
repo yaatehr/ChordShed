@@ -36,7 +36,7 @@ import bisect
 
 
 class MainWidget(BaseWidget) :
-    def __init__(self):
+    def __init__(self, callBack):
         super(MainWidget, self).__init__()
         
         #self.bg = Rectangle(pos=(0,0), size=(Window.width, Window.height), color=Color(*(1,1,1)) )
@@ -53,6 +53,7 @@ class MainWidget(BaseWidget) :
         self.canvas.add(gm)
         
         self.player = Player(nb, gm)
+        self.callback = callBack
         
         
         '''
@@ -477,4 +478,5 @@ class Player(object):
                 
         
 '''
-run(MainWidget)
+if __name__ == '__main__':
+    run(MainWidget)
