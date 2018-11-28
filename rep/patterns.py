@@ -1,19 +1,23 @@
 from rep.gem import Gem
 
+import sys
+sys.path.append('..')
+
+from src.chord import Chord, Key
 
 
 # helper function(s)
-def create_gem_pattern(pattern):
+def create_gem_pattern(pattern, key):
     gem_pattern = []
     for bar in pattern:
-        gems = [ Gem(b[0],b[1]) for b in bar ]
+        gems = [ Gem( key.generateChord(b[0]), b[1] ) for b in bar ]
         gem_pattern.append( tuple(gems) )
     return tuple( gem_pattern ) + tuple([None])
 
 
 class Pattern(object):
-    def __init__(self, pattern):
-        self.pattern = create_gem_pattern(pattern)
+    def __init__(self, pattern, key):
+        self.pattern = create_gem_pattern(pattern, key)
         self.idx = -1
     
     def reset(self):
@@ -32,13 +36,14 @@ class Pattern(object):
 
 
 # different song patterns
-kTest_pattern = ( ((1,2),), ((3,4),), ((3,2),), ((3,1),(3,3)), ((3,2),(3,4)) )
+kTest_pattern = ( ((2,2),), ((5,4),), ((1,2),), ((3,1),(6,3)), ((4,2),(1,4)) )
 
 
 
 
 
 # declarations of the progressions that will be used in the game
-Test_Pattern = Pattern(kTest_pattern)
+key = Key(key='C')
+Test_Pattern = Pattern(kTest_pattern, key)
 
             
