@@ -38,8 +38,6 @@ class NoteDetector(object):
         #TODO add clearing logic and refresh notes (we still want the mto decay)
 
     def reset(self):
-        self.correctNotes = set()
-        self.incorrectNotes = set()
         self.playingNotes.clear()
 
     def initializeChords(self):
@@ -81,7 +79,6 @@ class NoteDetector(object):
 
                     elif message.note in self.targetMidi:
                         correctNote = True
-                print(correctNote)
                 self.playingNotes.update({message.note: correctNote})
                 try:
                     vel = message.velocity if message.velocity else np.clip(message.value, 0 ,100)
@@ -92,9 +89,11 @@ class NoteDetector(object):
                 self.synth.noteon(0, message.note, vel)
                 if self.targetChord and self.checkForChords():
                     if self.onHit:
-                        self.onHit()
+                        return self.onHit()
                 elif self.onInput:
-                    self.onInput(message.note, correctNote)
+                    return self.onInput(message.note, correctNote)
+
+
 
     
     def getActiveNotes(self):
@@ -114,12 +113,8 @@ class NoteDetector(object):
         self.detectingKey = key
 
     def checkForChords(self):
-        notes = set(self.playingNotes.values())
+        notes = list(self.playingNotes.values())
         if len(notes) < 3:
             return False
-        # scan for chords
         if self.targetChord:
-            if all(self.playingNotes.values()):
-                print('found chord')
-            return True
-        return False
+            return all(notes)

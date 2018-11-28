@@ -46,12 +46,20 @@ class Player(object):
 
     def on_hit(self):
         if self._temporal_hit():
-            self.score += 1
-        else:
-            self.score -= 1
+            print('past temp hit')
+            if len(self.display.active_gems) > 1:
+                print('replacement gem')
+                # self.gem.a
+                # self.update_target(self.gem)
+        self.score += 1
+        print('past score')
+
+
 
     def on_miss(self, note):
-        print('missed: %d' % note)
+        # print('missed: %d' % note)
+        self.score -= 1
+        pass
         
     def load_pattern(self, pattern):
             self.pattern = pattern
@@ -87,18 +95,19 @@ class Player(object):
         targetGem = self.display.active_gems[minIndex]
         if targetGem is not self.targetGem:
             self.targetGem = targetGem
-            print('new target chord')
+            # print('new target chord')
             targetGem.focus() #TODO
             chord = targetGem.get_chord()
             self.update_target(chord)
 
     def _temporal_hit(self):
+        if not self.display.active_gems:
+            return
         cursor_xpos = self.cursor.get_xpos()
-        for gem in self.display.active_gems:
-            if cursor_xpos - self.slack_win < gem.get_cpos()[0] < cursor_xpos + self.slack_win:
-                    print(chord, gem.get_chord())
-                # if chord == str(gem.get_chord()):
-                #     hit = True
-                    gem.on_hit()
-                    return True
+        if cursor_xpos - self.slack_win < self.targetGem.get_cpos()[0] < cursor_xpos + self.slack_win:
+            # if chord == str(gem.get_chord()):
+            #     hit = True
+                self.targetGem.on_hit()
+                self.targetGem = None
+                return True
         return False

@@ -39,7 +39,7 @@ import bisect
 
 
 class MainWidget(BaseWidget) :
-    def __init__(self):
+    def __init__(self, callback=None):
         super(MainWidget, self).__init__()
         
         #self.bg = Rectangle(pos=(0,0), size=(Window.width, Window.height), color=Color(*(1,1,1)) )
@@ -74,6 +74,8 @@ class MainWidget(BaseWidget) :
         self.midiInput = None
         self.info = topleft_label()
         self.add_widget(self.info)
+
+        self.switchScreens = callback
 
 
 
