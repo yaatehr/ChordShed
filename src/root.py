@@ -22,8 +22,7 @@ from kivy.core.text import Label as CoreLabel
 from kivy.graphics.instructions import InstructionGroup
 from kivy.graphics import Color, Ellipse, Line, Rectangle, Mesh
 from kivy.graphics import PushMatrix, PopMatrix, Translate, Scale, Rotate
-# from test.main import RootWidget as GameScreen
-
+from test.main import MainWidget as GameScreen
 
 
 
@@ -40,6 +39,7 @@ class RootWidget(BaseWidget) :
             self.clear_widgets()
         self.widget = incomingWidget
         self.add_widget(self.widget)
+        self.widget
 
     def on_key_down(self, keycode, modifiers):
         # print('keypress')
@@ -67,11 +67,7 @@ class RootWidget(BaseWidget) :
     def on_update(self):
         pass
 
-
-
-
 class HomeScreen(BaseWidget):
-
     def __init__(self, callBack):
         super(HomeScreen, self).__init__()
         w = Window.width//3
@@ -104,10 +100,23 @@ class HomeScreen(BaseWidget):
     def on_key_down(self, keycode, modifiers):
         if keycode[1] == 't':
             self.buttons[0].buttonPress()
-        
-    
-    def callback(self):
-        print('vallback')
+
+
+
+# class GameScreen(BaseWidget):
+#     def __init__(self, callBack):
+#         super(GameScreen, self).__init__()
+#         self.objects = AnimGroup()
+#         self.canvas.add(Rectangle(size=(Window.width,Window.height)))
+#         self.canvas.add(self.objects)
+
+#     def on_update(self):
+#         self.objects.on_update()
+
+#     def on_key_down(self, keycode, modifiers):
+#         if keycode[1] == 't':
+#             print('game running')
+
 
 
 class Button(InstructionGroup):
