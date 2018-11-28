@@ -67,7 +67,12 @@ class MainWidget(BaseWidget) :
         
         self.player = Player(nb, gm)
         # self.callback = callBack
+        
+        #midi input state
         self.midiInput = None
+        self.info = topleft_label()
+        self.add_widget(self.info)
+
 
 
         '''
@@ -89,14 +94,20 @@ class MainWidget(BaseWidget) :
         self.paused = True
     '''
     def initialize_controller(self):
+        if self.hasMidiInput:
+            return True
         inport = None
         try: 
             inport = mido.open_input(virtual=False, callback=self.detector.callback)
             print('port initialized')
         except Exception as e:
+            return False
             print('no input attached ', e)
-        return inport
+        self.midiInput = inport
+        return True
 
+    def hasMidiInput(self):
+        return self.midiInput is not None
 
     def on_key_down(self, keycode, modifiers):
         if keycode[1] == 't':
@@ -127,7 +138,15 @@ class MainWidget(BaseWidget) :
     def on_update(self) :
         self.player.on_update()
         self.audio.on_update()
-        
+        self.info.on_update()
+        # check for midi input and add onscreen indicator
+
+        if self.hasMidiInput():
+            self.info.text = "\nKeyboard Connected"
+        else:
+            self.info.text = "NO Keyboard Found"
+
+
         # update personal clock
         # self.t += kivyClock.frametime
         '''
