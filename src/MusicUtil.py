@@ -24,8 +24,8 @@ def createKeyVariants(chord):
     allKeys = np.repeat(range(12), 3, axis=0).reshape(12,-1)
     chordList = np.repeat(chord, 12, axis=0).reshape(3,-1)
     chordList += allKeys.T
-    output = [set(chordNotes) for chordNotes in chordList.T]
-    return output
+    output = [sorted(chordNotes) for chordNotes in chordList.T]
+    return tuple(output)
 
 ALL_KEYS = ['C', 'C#', 'D', 'Eb', 'E', "F", 'F#', 'G', 'Ab', 'A', 'Bb', 'B']
 
@@ -52,7 +52,7 @@ class Chord(object):
         self.midiRep = None
     def getMidiTones(self):
         if self.midiRep == None:
-            midiRep = MAJOR_CHORDS[self.key]
+            midiRep = MAJOR_CHORDS[ALL_KEYS.index(self.key)]
             if self.octave != 0:
                 midiRep += 12*self.octave
             if self.isAugmented:
@@ -98,6 +98,8 @@ class Key(object):
 
 
 
-key = Key(key='C')
+#key = Key(key='C')
 
-print(key.generateChord(1))
+#print(key.generateChord(1))
+
+print(MAJOR_CHORDS)
