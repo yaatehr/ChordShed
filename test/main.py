@@ -1,6 +1,6 @@
 #pset6.py
 
-
+import mido
 import sys
 sys.path.append('..')
 from common.core import *
@@ -25,6 +25,8 @@ from rep.gembar import GemBar
 from rep.gem import Gem
 from rep.gamedisplay import GameDisplay
 from rep.player import Player
+from src.notedetector import NoteDetector
+from src.pianotutor import KeyboardGui
 
 from rep.constants import *
 from rep.patterns import *
@@ -47,9 +49,11 @@ class MainWidget(BaseWidget) :
         self.audio = Audio(2)
         self.synth = Synth('../data/FluidR3_GM.sf2')
         self.audio.set_generator(self.synth)
+        
         nd = NoteDetector(self.synth)
+        kg = KeyboardGui(nd)
 
-        kg = KeyboardGui(self.noteDetector)
+        self.detector = nd
 
         # Create Gem Bar over which our Now Bar cursor will scroll
         gb = GemBar()
@@ -63,7 +67,7 @@ class MainWidget(BaseWidget) :
         
         self.player = Player(nb, gm)
         # self.callback = callBack
-        
+        self.midiInput = None
 
 
         '''
@@ -84,7 +88,16 @@ class MainWidget(BaseWidget) :
         # keep state
         self.paused = True
     '''
-    
+    def initialize_controller(self):
+        inport = None
+        try: 
+            inport = mido.open_input(virtual=False, callback=self.detector.callback)
+            print('port initialized')
+        except Exception as e:
+            print('no input attached ', e)
+        return inport
+
+
     def on_key_down(self, keycode, modifiers):
         if keycode[1] == 't':
             self.player.load_pattern(Test_Pattern)
@@ -94,7 +107,11 @@ class MainWidget(BaseWidget) :
             
         elif keycode[1] == 'o':
             self.player.play_game()
-            
+
+        elif keycode[1] == 'r' and self.midiInput is None:
+            self.midiInput = self.initialize_controller()
+            # self.synth.start()
+
         else:
             self.player.on_input(keycode[1])
         
@@ -109,7 +126,10 @@ class MainWidget(BaseWidget) :
     
     def on_update(self) :
         self.player.on_update()
-
+        self.audio.on_update()
+        
+        # update personal clock
+        # self.t += kivyClock.frametime
         '''
         if not self.paused:
             self.player.on_update()
