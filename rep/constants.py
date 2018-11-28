@@ -34,7 +34,7 @@ kInactiveTicks = (0,1,15,16)                        # index numbers of inactive 
 
 # Functions and constants for Gems
 kGemSize = (50, 50)
-kGemDefaultColor = (1,0,1,1)
+kGemDefaultColor = (1,1,1,1)#(1,0,1,1)
 kGemHit = (0,1,0)
 kGemMiss = (1,0,0)
 kGemExitVelocity = 1000
@@ -46,8 +46,8 @@ kWinLen = .1 # in seconds
 
 
 # filepaths
-kNowBarPng = '../images/smiley.png'
-kGemPng = '../images/chord_ball.png'
+kNowBarPng = '../images/cursor.png'
+kGemPng = '../images/smiley.png'
 
 
 

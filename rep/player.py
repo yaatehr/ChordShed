@@ -17,7 +17,6 @@ class Player(object):
         self.pattern = None
         
         self.slack_win = self.cursor.v * kWinLen
-        
         self.cursor.install_cb( self.player_input )
     
     def player_input(self):
