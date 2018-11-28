@@ -65,7 +65,9 @@ class MainWidget(BaseWidget) :
         gm = GameDisplay(nb, gb, nd, kg)
         self.canvas.add(gm)
         
-        self.player = Player(nb, gm)
+        self.player = Player(nb, gm, nd.updateTargetChord)
+        self.detector.initializePlayer(self.player)
+
         # self.callback = callBack
         
         #midi input state
@@ -94,7 +96,7 @@ class MainWidget(BaseWidget) :
         self.paused = True
     '''
     def initialize_controller(self):
-        if self.hasMidiInput:
+        if self.hasMidiInput():
             return True
         inport = None
         try: 
@@ -120,11 +122,11 @@ class MainWidget(BaseWidget) :
             self.player.play_game()
 
         elif keycode[1] == 'r' and self.midiInput is None:
-            self.midiInput = self.initialize_controller()
+            self.initialize_controller()
             # self.synth.start()
 
-        else:
-            self.player.on_input(keycode[1])
+        # else:
+        #     self.player.on_input(keycode[1])
         
         
     '''
@@ -138,13 +140,12 @@ class MainWidget(BaseWidget) :
     def on_update(self) :
         self.player.on_update()
         self.audio.on_update()
-        self.info.on_update()
         # check for midi input and add onscreen indicator
 
         if self.hasMidiInput():
             self.info.text = "\nKeyboard Connected"
         else:
-            self.info.text = "NO Keyboard Found"
+            self.info.text = "\nNO Keyboard Found"
 
 
         # update personal clock
