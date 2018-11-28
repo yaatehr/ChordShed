@@ -6,6 +6,7 @@ from kivy.graphics.instructions import InstructionGroup
 from kivy.graphics import Color
 
 from kivy.core.window import Window
+from kivy.core.image import Image
 
 from math import cos, exp
 
@@ -22,6 +23,8 @@ class NowBar(InstructionGroup):
     def __init__(self, bpm):
         super(NowBar, self).__init__()
         
+        self.bpm = bpm
+        
         # color the cursor grey
         self.color = Color(*kCursorDefaultColor)
         self.add( self.color ) 
@@ -34,7 +37,7 @@ class NowBar(InstructionGroup):
         
         # draw the cursor as a circle
         cpos = (self.xpos, self.ypos)
-        self.cursor = CEllipse(cpos=cpos, csize=self.csize)
+        self.cursor = CEllipse(cpos=cpos, csize=self.csize, texture=Image(kNowBarPng).texture)
         self.add(self.cursor)
         
         # limits that NowBar will be moving within, correlates with length of gem bar
@@ -53,15 +56,17 @@ class NowBar(InstructionGroup):
         # hold callback that will be used to indicate reaching the end of the line
         self.end_cb = None
         
-    
     def install_cb(self, cb):
         self.end_cb = cb 
         
     def change_bpm(self, bpm):
-        self.v = BpmToPixels(bpm)   
+        self.bpm = bpm
+        self.v = BpmToPixels(self.bpm)
+    
+    def get_xpos(self):
+        return self.xpos
     
     def update_pos(self, dt):
-        # update the barline to its new y position
         # y should remain constant
         curr_xpos = self.cursor.get_cpos()[0]
         new_xpos = curr_xpos + self.v * dt

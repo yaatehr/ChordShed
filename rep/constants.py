@@ -16,7 +16,7 @@ kGemBarYPos = Window.height - kYOffset  # y position where gem bar will be locat
 # Constants for cursor/now bar
 kCursorSize = (40, 40)                  # size of the cursor
 kCursorDefaultColor = (1,1,0)           # cursor color
-kCursorDecayRate = 1000                 # decay of cursor animation
+kCursorDecayRate = 10                   # decay of cursor animation
 kCursorOscRate = kCursorDecayRate * 2   # speed of animation
 kCursorMaxTime = 20                     # 
 
@@ -42,7 +42,12 @@ kGemDecayRate = 2#10
 kGemGrowthRate = 5
 
 
-# Functions and constants for GameDisplay
+kWinLen = .1 # in seconds
+
+
+# filepaths
+kNowBarPng = '../images/smiley.png'
+kGemPng = '../images/chord_ball.png'
 
 
 

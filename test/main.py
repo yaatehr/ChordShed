@@ -23,6 +23,7 @@ from rep.nowbar import NowBar
 from rep.gembar import GemBar
 from rep.gem import Gem
 from rep.gamedisplay import GameDisplay
+from rep.player import Player
 
 from rep.constants import *
 from rep.patterns import *
@@ -42,19 +43,16 @@ class MainWidget(BaseWidget) :
         #self.canvas.add(self.bg)
         
         # Create Gem Bar over which our Now Bar cursor will scroll
-        self.gb = GemBar()
-        #self.canvas.add(self.gb)
-        
-        # Create Gem
-        self.g = Gem('t', 1)
-        #self.canvas.add(self.g)
+        gb = GemBar()
         
         # Create Now Bar to scroll across Gem Bar
-        self.nb = NowBar(100)
+        nb = NowBar(100)
         #self.canvas.add(self.nb)
         
-        self.gm = GameDisplay(self.nb, self.gb)
-        self.canvas.add(self.gm)
+        gm = GameDisplay(nb, gb)
+        self.canvas.add(gm)
+        
+        self.player = Player(nb, gm)
         
         
         '''
@@ -75,11 +73,19 @@ class MainWidget(BaseWidget) :
         # keep state
         self.paused = True
     '''
+    
     def on_key_down(self, keycode, modifiers):
-        pass
-               
         if keycode[1] == 't':
-            self.gm.load_pattern(Test_Pattern)
+            self.player.load_pattern(Test_Pattern)
+            
+        elif keycode[1] == 'p':
+            self.player.pause_game()
+            
+        elif keycode[1] == 'o':
+            self.player.play_game()
+            
+        else:
+            self.player.on_input(keycode[1])
         
         
     '''
@@ -89,10 +95,10 @@ class MainWidget(BaseWidget) :
         if button_idx != None:
             self.player.on_button_up(button_idx)
     '''
+    
     def on_update(self) :
-        self.gm.on_update()
-        #self.nb.on_update()
-        #self.g.on_update(kDt)
+        self.player.on_update()
+
         '''
         if not self.paused:
             self.player.on_update()
