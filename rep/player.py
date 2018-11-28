@@ -2,6 +2,7 @@
 from kivy.core.image import Image
 
 from rep.constants import *
+from src.notedetector import NoteDetector
 
 class Player(object):
     def __init__(self, cursor, display):

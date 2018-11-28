@@ -131,9 +131,6 @@ class GuiKey(InstructionGroup):
             self.color.rgba = self.inactiveColor
         
 
-
-        
-
 class KeyboardGui(InstructionGroup):
     blackKey = [True, True, False, True, True, True, False]
 
