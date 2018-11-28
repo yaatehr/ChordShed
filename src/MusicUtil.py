@@ -1,22 +1,22 @@
-import mido
-from mido import Message, MidiFile, MidiTrack
+# import mido
+# from mido import Message, MidiFile, MidiTrack
 import numpy as np
-import time
-from LRUDict import LRUDict
-import sys
-sys.path.append('..')
-from common.core import *
-from common.audio import *
-from common.mixer import *
-from common.wavegen import *
-from common.wavesrc import *
-from common.gfxutil import *
-from common.synth import *
-from common.modifier import Modifier
-from kivy.graphics.instructions import InstructionGroup
-from kivy.graphics import Color, Ellipse, Line, Rectangle
-from kivy.graphics import PushMatrix, PopMatrix, Translate, Scale, Rotate
-from kivy.clock import Clock as kivyClock
+# import time
+# from LRUDict import LRUDict
+# import sys
+# sys.path.append('..')
+# from common.core import *
+# from common.audio import *
+# from common.mixer import *
+# from common.wavegen import *
+# from common.wavesrc import *
+# from common.gfxutil import *
+# from common.synth import *
+# from common.modifier import Modifier
+# from kivy.graphics.instructions import InstructionGroup
+# from kivy.graphics import Color, Ellipse, Line, Rectangle
+# from kivy.graphics import PushMatrix, PopMatrix, Translate, Scale, Rotate
+# from kivy.clock import Clock as kivyClock
 
 
 
@@ -51,7 +51,7 @@ class Chord(object):
         self.isMajor = major
         self.midiRep = None
     def getMidiTones(self):
-        if self.midiRep = None:
+        if self.midiRep == None:
             midiRep = MAJOR_CHORDS[self.key]
             if self.octave != 0:
                 midiRep += 12*self.octave
@@ -77,20 +77,27 @@ class Chord(object):
         else:
             return self.midiRep 
     def toString(self):
-        stringBuilder = 
-        return
+        return 'TODO'
     
-def Key(object):
+class Key(object):
     def __init__(self, key='C', major=True):
-        if key not in ALL_KEYS key = 'C' else pass
+        key = 'C' if key not in ALL_KEYS else key
         self.key = key
         self.isMajor = major        
 
     def generateChord(self, degree, octave=0, inversion=0, augmented=False):
+        assert degree > 0
         conf = MAJOR_CHORD_QUALITIES[degree] if self.isMajor else MINOR_CHORD_QUALITIES[degree]
         isMajor, isDimnished = conf
         tonic = ALL_KEYS.index(self.key)
         chordKey = ALL_KEYS[(tonic+(degree - 1))%12]
         return Chord(key=chordKey, octave=octave, inversion=inversion, augmented=augmented, diminished=isDimnished, major=isMajor)
     def parsePhrase(self, arr):
+        # Pass in dicts with the definitions here. We can automate the dict creating process
         return [self.generateChord(*tup) for tup in arr]
+
+
+
+key = Key(key='C')
+
+print(key.generateChord(1))
