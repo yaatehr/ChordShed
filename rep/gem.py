@@ -35,8 +35,11 @@ class Gem(InstructionGroup):
         self.csize = (0,0)
         
         # draw gem as a 4 segment circle
+        fp_png = '../images/' + chord.key.lower() + '-' + QUALITIES_FP[chord.quality] + '.png'
+        print(fp_png)
+        
         cpos = (self.xpos, self.ypos)
-        self.gem = CEllipse(cpos=cpos, csize=self.csize, texture=Image(kGemPng).texture)
+        self.gem = CEllipse(cpos=cpos, csize=self.csize, texture=Image(fp_png).texture)
         self.add(self.gem)
         
         # state for when to animate
@@ -64,12 +67,11 @@ class Gem(InstructionGroup):
         self.__init__(self.chord, self.beat)
         
     def on_hit(self):
-        #self.color.rgb = kGemHit
-        self.gem.texture = Image(kNowBarPng).texture
+        self.gem.texture = Image(kGemHitPng).texture
         self.done = True
         
     def on_miss(self):
-        self.color.rgb = kGemMiss
+        self.gem.texture = Image(kGemMissPng).texture
         self.done = True
         
     def on_update(self, dt):

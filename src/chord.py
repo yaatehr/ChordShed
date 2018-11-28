@@ -8,7 +8,6 @@ DIM = 3
 
 QUALITIES = (AUG, MAJ, MIN, DIM)
 
-
 def createKeyVariants(chord):
     allKeys = np.repeat(range(12), 3, axis=0).reshape(12,-1)
     chordList = np.repeat(chord, 12, axis=0).reshape(3,-1)
@@ -41,7 +40,8 @@ MINOR_STEPS = (0, 2, 3, 5, 7, 8, 11)
 class Chord(object):
     def __init__(self, key='C',  octave=0, inversion=0, quality=MAJ):
         key = 'C' if key not in ALL_KEYS else key
-        self.key_idx = ALL_KEYS.index(key) 
+        self.key = key
+        self.key_idx = ALL_KEYS.index(self.key) 
         self.octave = octave
         self.inversion = np.clip(inversion, 0, 2)
         self.quality = quality
@@ -85,13 +85,21 @@ class Key(object):
     def parsePhrase(self, arr):
         # Pass in dicts with the definitions here. We can automate the dict creating process
         return [self.generateChord(*tup) for tup in arr]
-        
-        
 
+
+def compare_chords(chord1, chord2):
+    return chord1.toString() == chord2.toString()       
+
+
+
+
+        
+'''
 for i in range(12):
     key = Key(key=ALL_KEYS[i])
     print("\nKey of " + ALL_KEYS[i] + " Major")
     for j in range(1,8):
         print(key.generateChord(j).toString())
 
-#print(MAJOR_CHORDS)                
+#print(MAJOR_CHORDS)   
+'''             
