@@ -112,11 +112,13 @@ class SaveData(object):
         for key, val in card.gemHits.items():
             self.gemHits[key] += val
         
+    def clear(self):
+        self.gemHits = dict()
     def saveFiles(self):
         try:
             with open(pathToSaves+name+".txt", 'w+') as saveData:
                 for key, val in self.gemHits.items():
-                    string = key + "," + val.join(',')
+                    string = key + "/".join([str(item) for item in val])
                     saveData.write(string + "\n")
         except Error as a:
             print(a)
