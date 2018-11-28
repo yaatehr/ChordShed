@@ -9,6 +9,7 @@ from common.mixer import *
 from common.wavegen import *
 from common.wavesrc import *
 from common.gfxutil import *
+from common.synth import *
 
 from kivy.graphics.instructions import InstructionGroup
 from kivy.graphics import Color, Ellipse, Line, Rectangle
@@ -36,12 +37,20 @@ import bisect
 
 
 class MainWidget(BaseWidget) :
-    def __init__(self, callBack):
+    def __init__(self):
         super(MainWidget, self).__init__()
         
         #self.bg = Rectangle(pos=(0,0), size=(Window.width, Window.height), color=Color(*(1,1,1)) )
         #self.canvas.add(self.bg)
         
+        #Audio
+        self.audio = Audio(2)
+        self.synth = Synth('../data/FluidR3_GM.sf2')
+        self.audio.set_generator(self.synth)
+        nd = NoteDetector(self.synth)
+
+        kg = KeyboardGui(self.noteDetector)
+
         # Create Gem Bar over which our Now Bar cursor will scroll
         gb = GemBar()
         
@@ -49,13 +58,14 @@ class MainWidget(BaseWidget) :
         nb = NowBar(100)
         #self.canvas.add(self.nb)
         
-        gm = GameDisplay(nb, gb)
+        gm = GameDisplay(nb, gb, nd, kg)
         self.canvas.add(gm)
         
         self.player = Player(nb, gm)
-        self.callback = callBack
+        # self.callback = callBack
         
-        
+
+
         '''
         # set up audio
         self.audio = AudioController(fp_mtaf)
