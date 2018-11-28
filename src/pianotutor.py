@@ -12,7 +12,9 @@ class GuiKey(InstructionGroup):
     '''
     Key class, keys are drawn from the top down.
     '''
-    activeColor = (.2,.3,.2,.2)
+    activeColor = (.2,.3,.2,.5)
+    correctColor = (.15,.86,.3, .5)
+    incorrectColor = (1,.3,.5,.5)
     white = (1,1,1, 1)
     black = (0,0,0, 1)
 
@@ -29,7 +31,7 @@ class GuiKey(InstructionGroup):
             self.inactiveColor = self.white
 
         self.color = Color(*self.inactiveColor, mode='rgba')
-        self.state = "inactive"
+        # self.state = "inactive"
         self.time = 5
         self.timeout = .2
 
@@ -39,7 +41,16 @@ class GuiKey(InstructionGroup):
         self.add(self.color)
         self.add(self.rect)
 
-    def keyPress(self):
+    def keyPress(self, correct= False):
+        if correct:
+            self.activeColor = self.correctColor
+            self.disactivateAnim = KFAnim((0, *self.activeColor), (self.timeout, *self.inactiveColor))
+            self.activateAnim = KFAnim((0, *self.inactiveColor), (self.timeout, *self.activeColor))
+        else:
+            self.activeColor = self.incorrectColor
+            self.disactivateAnim = KFAnim((0, *self.activeColor), (self.timeout, *self.inactiveColor))
+            self.activateAnim = KFAnim((0, *self.inactiveColor), (self.timeout, *self.activeColor))
+            
         self.color.rgba = self.activeColor
         self.time = 0
 
@@ -70,10 +81,9 @@ class KeyboardGui(InstructionGroup):
         self.noteDetector = note_detector
 
     def updateGui(self):
-        activeKeys = [x%(12*self.numOctaves) for x in self.noteDetector.getActiveNotes()]
-        # print(activeKeys)
-        for index in activeKeys:
-            self.keys[index].keyPress()
+        correct, incorrect = self.noteDetector.getActiveNotes()
+        [self.keys[x%(12*self.numOctaves)].keyPress(True) for x in correct]
+        [self.keys[x%(12*self.numOctaves)].keyPress(False) for x in incorrect]
 
     def initializeKeys(self):
         padding = 10

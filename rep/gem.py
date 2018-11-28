@@ -74,6 +74,9 @@ class Gem(InstructionGroup):
         self.gem.texture = Image(kGemMissPng).texture
         self.done = True
         
+    def focus(self):
+        pass #TODO decaying glow animation
+        
     def on_update(self, dt):
         new_size = kGemSize[0] * (1 - exp(-kGemGrowthRate * self.t))
         self.set_csize(new_size)
