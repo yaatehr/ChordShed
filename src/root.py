@@ -27,19 +27,21 @@ from test.main import MainWidget as GameScreen
 
 
 class RootWidget(BaseWidget) :
-    screens = ['home', 'game', 'reward', 'gameNoTutor']
+    screens = ['home', 'game', 'score', 'gameNoTutor']
     def __init__(self):
         super(RootWidget, self).__init__()
         self.widget = None
+        self.scoreCard = None
+
         # self.sm = ScreenManager(transition=FadeTransition())
     
     def switchScreen(self, screenName):
         incomingWidget = self.generateWidget(screenName)
         if self.widget:
             self.clear_widgets()
+            del self.widget
         self.widget = incomingWidget
         self.add_widget(self.widget)
-        self.widget
 
     def on_key_down(self, keycode, modifiers):
         # print('keypress')
@@ -48,7 +50,7 @@ class RootWidget(BaseWidget) :
         if keycode[1] == '2':
             self.switchScreen('game')
         if keycode[1] == '3':
-            self.switchScreen('reward')
+            self.switchScreen('score')
 
         if self.widget:
             self.widget.on_key_down(keycode, modifiers)
@@ -58,8 +60,8 @@ class RootWidget(BaseWidget) :
             return HomeScreen(self.switchScreen)
         elif screenName == 'game':
             return GameScreen(self.switchScreen)
-        # elif screenName == 'reward':
-        #     return RewardScreen()
+        elif screenName == 'score':
+            return ScoreScreen(self.scoreCard,self.switchScreen)
         else:
             return HomeScreen(self.switchScreen)
     def on_key_up(self, keycode):
@@ -153,7 +155,7 @@ class Button(InstructionGroup):
         if 'game' in self.filePath:
             screen = 'game'
         elif 'statistics' in self.filePath:
-            screen = 'reward'
+            screen = 'score'
         self.callback(screen)
     #     self.color.rgba = self.activeColor
     #     self.time = 0
