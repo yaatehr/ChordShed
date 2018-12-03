@@ -3,6 +3,7 @@ Definition of constants used for sizing and positioning in representation
 of gems, gem bar, and now bar
 '''
 import numpy as np
+from math import sqrt
 
 from kivy.core.window import Window
 
@@ -12,18 +13,22 @@ kTrackLowerLimit = 20                   # x position lower bound of the gem bar
 kYOffset = 40
 kGemBarYPos = Window.height - kYOffset  # y position where gem bar will be located
 
+kTotalArea = Window.height * Window.width
+kSquareLen = sqrt(kTotalArea)
 
 # Constants for cursor/now bar
-kCursorSize = (40, 40)                  # size of the cursor
-kCursorDefaultColor = (1,1,0)           # cursor color
-kCursorDecayRate = 10                   # decay of cursor animation
-kCursorOscRate = kCursorDecayRate * 2   # speed of animation
-kCursorMaxTime = 20                     # 
+kCursorPercentage = .07
+kCursorSize = (kSquareLen * kCursorPercentage,) * 2 # size of the cursor
+kCursorDefaultColor = (1,1,0)                       # cursor color
+kCursorDecayRate = 10                               # decay of cursor animation
+kCursorOscRate = kCursorDecayRate * 2               # speed of animation
+kCursorMaxTime = 20                                 
 
 
 
 # Constants for ticks
-kBigTickLength = 20                                 # vertical length of downbeat ticks
+kBigTickPercentage = .07
+kBigTickLength = kSquareLen * kBigTickPercentage    # vertical length of downbeat ticks
 kSmallTickLength = kBigTickLength // 4              # vertical length of offbeat ticks
 kTickWidth = 5                                      # width of ticks
 kTickSpacing = Window.width - 2 * kTrackLowerLimit  # horizontal spacing of ticks
@@ -33,7 +38,7 @@ kInactiveTicks = (0,1,15,16)                        # index numbers of inactive 
 
 
 # Functions and constants for Gems
-kGemSize = (50, 50)
+kGemSize = kCursorSize
 kGemDefaultColor = (1,1,1,1)#(1,0,1,1)
 kGemExitVelocity = 1000
 kGemDecayRate = 2#10
