@@ -49,7 +49,8 @@ class MainWidget(BaseWidget) :
         self.audio = Audio(2)
         self.playerSynth = Synth('../data/FluidR3_GM.sf2')
         self.audio.set_generator(self.playerSynth)
-        
+        self.clock= Clock()
+
         nd = NoteDetector(self.playerSynth)
         kg = KeyboardGui(nd)
 
@@ -61,11 +62,13 @@ class MainWidget(BaseWidget) :
         # Create Now Bar to scroll across Gem Bar
         nb = NowBar(100)
         #self.canvas.add(self.nb)
-        
-        gm = GameDisplay(nb, gb, nd, kg)
+        self.clock = Clock()
+        self.ticker = Ticker(self.pattern, key, self.clock)
+
+        # gm = GameDisplay(nb, gb, nd, kg)
         self.canvas.add(gm)
         
-        self.player = Player(nb, gm, nd.updateTargetChord)
+        self.player = Player(nb, gm, self.ticker, self.clock, nd.updateTargetChord)
         self.detector.initializePlayer(self.player)
 
         # self.callback = callBack

@@ -44,6 +44,19 @@ class Pattern(object):
 kTest_pattern = ( ((2,2),), ((5,4),), ((1,2),), ((3,1),(6,3)), ((4,2),(1,4)) )
 
 
+def patternReader(fileInput):
+    '''
+    Input takes one call (4 bars) per line. Entries will be parse as #chord, #beat
+    '''
+    output = []
+    with open(fileInput, 'r') as inputFile:
+        for line in inputFile.readlines():
+            tokens = line.strip().split(',')
+            pattern = zip(tokens[0::2], tokens[1::2])
+            output.append(pattern)
+
+
+    return output
 
 
 

@@ -7,7 +7,7 @@ from src.score import ScoreCard
 from ticker import Ticker
 
 class Player(object):
-    def __init__(self, cursor, display, targetCallback = None):
+    def __init__(self, cursor, display, ticker, clock, targetCallback = None):
         super(Player, self).__init__()
         self.display = display
         self.score = 0
@@ -16,8 +16,8 @@ class Player(object):
         self.pattern = None
         self.update_target = targetCallback
         self.mode = "call"
-        self.clock = Clock()
-        self.ticker = Ticker(self.pattern, key, self.clock)
+        self.ticker = ticker
+        self.clock = clock
         self.barNum = 0
         self.slackWin = .1/(self.bpm/60)
 
@@ -89,7 +89,7 @@ class Player(object):
         
     def _catch_passes(self):
         for gem in self.ticker.active_gems:
-            
+
             if not gem.done and gem.get_cpos()[0] < cursor_xpos - self.slack_win:
                 self.score -= 1
                 gem.on_miss()
