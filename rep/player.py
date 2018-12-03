@@ -1,13 +1,13 @@
 
 from kivy.core.image import Image
-
+from common.clock import Clock
 from rep.constants import *
 from src.notedetector import NoteDetector
 from src.score import ScoreCard
 class Player(object):
     def __init__(self, cursor, display, targetCallback = None):
         super(Player, self).__init__()
-        
+        self.clock = Clock()
         self.cursor = cursor
         self.display = display
         self.score = 0
@@ -33,11 +33,13 @@ class Player(object):
             
     def play_game(self):
         self.play = True
+        self.clock.start()
         if not self.saveData:
             self.saveData = ScoreCard()
             # self.saveData.clear()
 
     def pause_game(self):
+        self.clock.stop()
         self.play = False
         
     def on_input(self, note, correct):
