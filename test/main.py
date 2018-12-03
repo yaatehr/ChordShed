@@ -1,4 +1,4 @@
-#pset6.py
+
 
 import mido
 import sys
@@ -131,14 +131,6 @@ class MainWidget(BaseWidget) :
         # else:
         #     self.player.on_input(keycode[1])
         
-        
-    '''
-    def on_key_up(self, keycode):
-        # button up
-        button_idx = lookup(keycode[1], '12345', (0,1,2,3,4))
-        if button_idx != None:
-            self.player.on_button_up(button_idx)
-    '''
     
     def on_update(self) :
         self.player.on_update()
@@ -166,6 +158,13 @@ class MainWidget(BaseWidget) :
             self.info.text += '\n\npress "P" to pause'
         '''
         
+
+
+
+
+
+
+
 
 '''
 # creates the Audio driver

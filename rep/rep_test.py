@@ -31,19 +31,22 @@ from src.pianotutor import KeyboardGui
 '''
 
 from rep.constants import *
-#from rep.patterns import *
 
 
 class MainWidget(BaseWidget) :
     def __init__(self, callback=None):
         super(MainWidget, self).__init__()
         
-        self.test = Gem((100,100), 1)
+        chord = 't'
+        self.test = Gem(chord, (100,100), 5)
         self.canvas.add(self.test)
         
    
-    def on_key_up(self, keycode):
-        pass
+    def on_key_down(self, keycode, modifiers):
+        if keycode[1] == 'q':
+            self.test.exit()
+        if keycode[1] == 'w':
+            self.test.on_hit()
         
     
     def on_update(self) :

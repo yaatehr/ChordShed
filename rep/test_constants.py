@@ -14,4 +14,5 @@ kGemRingHit = (0,1,0)
 kGemRingMiss = (1,.2,.5)
 
 kGemCircleSize = (2 * kGemRingRadius - kGemRingWidth,) * 2
+kGemCircleColor = (1,1,1)
 

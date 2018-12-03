@@ -12,6 +12,7 @@ from kivy.core.image import Image
 from math import exp
 
 from .test_constants import *
+from .constants import *
 
 
 
@@ -92,32 +93,37 @@ class Gem(InstructionGroup):
         return True
 '''
 
-
+'''
+Gem Representation using a Timed_CElli
+'''
 class Gem(InstructionGroup):
-    def __init__(self, cpos, timeout_len, chord='t'):
+    def __init__(self, chord, cpos, timeout_len):
         super(Gem, self).__init__()
         
-        # save position
-        self.gem = Timed_CEllipse(cpos)
+        # save initial position and create gem
+        self.cpos = cpos
+        self.gem = TimedCEllipse(cpos)
         self.add(self.gem)
+        
+        # save chord
+        self.chord = chord
         
         # save timeout time
         self.timeout_len = timeout_len
         
         # save state
         self.active = True
+        self.hit = False
         
+        # draw on the canvas
         self.on_update(0)
         
-    def set_cpos(self, cpos):
-        '''Set position of gem'''
-        self.gem.set_cpos(cpos)
-        
-        
+
     def on_hit(self):
         '''Change the color of the ring to green'''
         self.gem.set_angle(720)
         self.gem.set_ring_color(kGemRingHit)
+        self.hit = True
         
     
     def on_miss(self):
@@ -126,25 +132,48 @@ class Gem(InstructionGroup):
         self.gem.set_ring_color(kGemRingMiss)
         
     
+    def get_chord(self):
+        return self.chord
+    
+    '''
+    def on_reset(self):
+        print('\n\n')
+        self.gem.set_angle(0)
+        self.gem.set_ring_color(kGemRingColor)
+        self.gem.__init__(self.cpos)
+        self.__init__(self.chord, self.cpos, self.timeout_len)
+    '''
+    
     def check_timeout(self):
         '''Return True if a timeout has occured'''
         return self.gem.get_angle() >= 360       
     
     
     def exit(self):
+        '''Indicator to animate off of the screen'''
         self.active = False
         
     
     def on_update(self, dt):
         '''Timer should count down'''
-        if self.active:
-            if not self.check_timeout():
-                angle = self.gem.get_angle() + 360/self.timeout_len * dt
-                self.gem.set_angle(angle)
-            else:
-                self.on_miss()
-        else:
-            pass
+        if not self.check_timeout():
+            angle = self.gem.get_angle() + 360/self.timeout_len * dt
+            self.gem.set_angle(angle)
+        elif not self.hit:
+            self.on_miss()
+            
+        if not self.active:
+            # decrease the alpha
+            a = self.gem.rcolor.a - kGemDecayRate * dt
+            self.gem.set_alpha(a)
+            # set the new position
+            x, y = self.gem.get_cpos()
+            y -= kGemExitVelocity * dt
+            self.gem.set_cpos((x,y))
+            # stop drawing once it is transparent enough
+            return a >= .01
+        return True
+            
         
         
         
@@ -152,25 +181,26 @@ class Gem(InstructionGroup):
     
 
 '''
-Timed_CEllipse
-- CEllipse with a ring
+TimedCEllipse
+- CEllipse with a ring around it
+- Can set the start and end angle of the ring to create a timing effect
 '''
-class Timed_CEllipse(InstructionGroup):
-    def __init__(self, cpos):
-        super(Timed_CEllipse, self).__init__()
-        
+class TimedCEllipse(InstructionGroup):
+    def __init__(self, cpos, texture=None):
+        super(TimedCEllipse, self).__init__()
         # save position
         self.cpos = cpos
         
         # code for creating the Line
-        self.color = Color(*(1,1,0))
-        self.add(self.color)
+        self.rcolor = Color(*kGemRingColor)
+        self.add(self.rcolor)
         self.angle = 0
         self.ring = Line(circle=(*self.cpos, kGemRingRadius, self.angle, 360), width=kGemRingWidth, cap='none')
         self.add(self.ring)
         
         # code for creating the circle
-        self.add( Color(kGemRingColor) )
+        self.ccolor = Color(*kGemCircleColor)
+        self.add( self.ccolor )
         self.circ = CEllipse(cpos=cpos, csize=kGemCircleSize)
         self.add(self.circ)
 
@@ -184,13 +214,19 @@ class Timed_CEllipse(InstructionGroup):
     
     def get_cpos(self):
         '''Returned centered position of the shape'''
-        return self.circ.cpos
+        return self.cpos
 
 
     def set_ring_color(self, color):
         '''Set the ring color to indicate correct/incorrect input'''
-        self.color.rgb = color
+        self.rcolor.rgb = color
     
+    
+    def set_alpha(self, a):
+        '''Set the alpha for the sake of animating off the screen'''
+        self.rcolor.a = a
+        self.ccolor.a = a
+        
     
     def set_angle(self, angle):
         '''Set the new angle of the ring'''
