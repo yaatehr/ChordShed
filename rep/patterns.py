@@ -7,17 +7,22 @@ from src.chord import Chord, Key
 
 
 # helper function(s)
-def create_gem_pattern(pattern, key):
-    gem_pattern = []
+def create_bars(pattern, key):
+    gem_bars = []
+    chord_bars = []
     for bar in pattern:
-        gems = [ Gem( key.generateChord(b[0]), b[1] ) for b in bar ]
-        gem_pattern.append( tuple(gems) )
-    return tuple( gem_pattern ) + tuple([None])
+        chords_and_ticks = [(key.generateChord(b[0]), b[1]) for b in bar]
+        gems = [ Gem(chord, beat) for chord, beat in chords_and_ticks ]
+        chord_bars.append(chords_and_ticks)
+        gem_bars.append(gems)
+    return gem_bars, chord_bars
 
 
 class Pattern(object):
     def __init__(self, pattern, key):
-        self.pattern = create_gem_pattern(pattern, key)
+        gem_bars, chord_bars = create_bars(pattern, key)
+        self.gems = gem_bars
+        self.chords = chord_bars
         self.idx = -1
     
     def reset(self):

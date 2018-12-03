@@ -90,15 +90,15 @@ class SaveData(object):
     def __init__(self, name, gemSequence):
         self.gemSequence = gemSequence
         self.gemHits = dict()
-        self.name = gemSequence
+        self.name = name
 
     def loadSaves(self):
         try:
-            with open(pathToSaves+name, 'r') as saveData:
+            with open(pathToSaves+self.name, 'r') as saveData:
                 for line in saveData.readLines():
                     label, numHit, totalAppearances = line.split(',')
                     self.gemHits[label] = np.array(numHit,totalAppearances)
-        except Error as a:
+        except Exception as a:
             print(a)
     
     def gemAverages(self):
@@ -114,13 +114,14 @@ class SaveData(object):
         
     def clear(self):
         self.gemHits = dict()
+        
     def saveFiles(self):
         try:
-            with open(pathToSaves+name+".txt", 'w+') as saveData:
+            with open(pathToSaves + self.name +".txt", 'w+') as saveData:
                 for key, val in self.gemHits.items():
                     string = key + "/".join([str(item) for item in val])
                     saveData.write(string + "\n")
-        except Error as a:
+        except Exception as a:
             print(a)
     
 

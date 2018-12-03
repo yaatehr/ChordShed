@@ -47,10 +47,10 @@ class MainWidget(BaseWidget) :
         
         #Audio
         self.audio = Audio(2)
-        self.synth = Synth('../data/FluidR3_GM.sf2')
-        self.audio.set_generator(self.synth)
+        self.playerSynth = Synth('../data/FluidR3_GM.sf2')
+        self.audio.set_generator(self.playerSynth)
         
-        nd = NoteDetector(self.synth)
+        nd = NoteDetector(self.playerSynth)
         kg = KeyboardGui(nd)
 
         self.detector = nd
@@ -126,7 +126,7 @@ class MainWidget(BaseWidget) :
 
         elif keycode[1] == 'c' and self.midiInput is None:
             self.initialize_controller()
-            # self.synth.start()
+            # self.playerSynth.start()
 
         # else:
         #     self.player.on_input(keycode[1])
