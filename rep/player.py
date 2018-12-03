@@ -3,7 +3,7 @@ from kivy.core.image import Image
 
 from rep.constants import *
 from src.notedetector import NoteDetector
-from src.score import SaveData
+from src.score import ScoreCard
 class Player(object):
     def __init__(self, cursor, display, targetCallback = None):
         super(Player, self).__init__()
@@ -34,7 +34,8 @@ class Player(object):
     def play_game(self):
         self.play = True
         if not self.saveData:
-            self.saveData = SaveData('test', self.display.getAllGems())
+            self.saveData = ScoreCard()
+            # self.saveData.clear()
 
     def pause_game(self):
         self.play = False
