@@ -21,7 +21,7 @@ class Ticker(object):
     playQueues = 1
     noteDuration = 1
 
-    def __init__(self, songPattern, key, clock):
+    def __init__(self, songPattern, key, clock, nextBar=None):
         self.gems, self.bars = self.initialize_bars(songPattern, key)
         self.synth = Synth('../data/FluidR3_GM.sf2')
         totalBeats = self.measuresPerCall*self.numRepeats*len(self.bars)*4
@@ -29,7 +29,7 @@ class Ticker(object):
         data = [(0,0), (totalTime, totalBeats)]
         self.tempo = TempoMap(data=data)
         self.scheduler = Scheduler(clock, self.tempo)
-
+        self.nextBar = nextBar
         self.on_commands = [] # commands for a bar of call and response
         self.off_commands = []
         self.active_gems = []
@@ -58,10 +58,25 @@ class Ticker(object):
         self.clearBarGems(barIndex)
 
 
-    def getTargetGem(self):
+    def getRelativeTick(self, tick):
         tick = self.scheduler.get_tick()
+        barLenTicks = kTicksPerQuarter*4
+        tick = (tick - self.barTick)%barLenTicks
+
+    def getTargetGem(self, tick):
+        tick = self.getRelativeTick()
+        beatApprox = round(tick/barLenTicks)
+
         #find gem by tick
-        for gem in active_gems
+        minDist = 9999999999
+        for gem in active_gems:
+            gemDist = abs(gem.beat - beatApprox)
+            if  gemDist < minDist:
+                minDist = gemDist
+                targetGem = gem
+            
+        return targetGem
+
 
     def initialize_bars(self, pattern, key):
         gem_bars = []
@@ -105,6 +120,9 @@ class Ticker(object):
             for gem in bar:
                 tick = barTick + gem.beat*kTicksPerQuarter
                 # self.gem_commands.append(self.)
+
+    def refreshBarGems(self, barIndex):
+        pass
 
     def clearBarGems(self, barIndex):
         pass
