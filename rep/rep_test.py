@@ -38,15 +38,21 @@ class MainWidget(BaseWidget) :
         super(MainWidget, self).__init__()
         
         chord = 't'
-        self.test = Gem(chord, (100,100), 5)
+        self.test = Gem(chord, (400,300), 20, 5)
         self.canvas.add(self.test)
         
    
     def on_key_down(self, keycode, modifiers):
         if keycode[1] == 'q':
-            self.test.exit()
+            self.test.on_reset()
         if keycode[1] == 'w':
             self.test.on_hit()
+        if keycode[1] == '1':
+            self.test.set_radius(20)
+        if keycode[1] == '2':
+            self.test.set_radius(50)
+        if keycode[1] == '3':
+            self.test.set_radius(100)
         
     
     def on_update(self) :
