@@ -1,3 +1,5 @@
+
+
 import sys
 sys.path.append('..')
 
@@ -5,9 +7,9 @@ from common.gfxutil import CEllipse
 
 from kivy.graphics.instructions import InstructionGroup
 from kivy.graphics import Color, Line
+from kivy.core.image import Image
 
 from kivy.clock import Clock as kivyClock
-from kivy.core.image import Image
 
 from math import exp
 
@@ -17,7 +19,9 @@ from .constants import *
 
 '''
 Gem Representation using a TimedCEllipse
-- can be used with a 
+- outline will turn disappear and then turn red with a given timeout length
+- when struck correctly, the outline will turn green
+- when struck incorrectly, the shape will vibrate
 '''
 class Gem(InstructionGroup):
     def __init__(self, chord, cpos, radius, timeout_len):
@@ -35,9 +39,10 @@ class Gem(InstructionGroup):
         self.timeout_len = timeout_len
         
         # save state
-        self.active = True
+        self.exiting = False
         self.hit = False
         self.miss = False
+        self.active = False
         self.t = 10
         
         # draw on the canvas
@@ -51,7 +56,7 @@ class Gem(InstructionGroup):
     
     def on_hit(self):
         '''Change the color of the ring to green'''
-        if not self.miss:
+        if not self.miss and self.active:
             self.gem.set_angle(721)
             self.gem.set_ring_color(kGemRingHit)
             self.hit = True
@@ -59,7 +64,7 @@ class Gem(InstructionGroup):
     
     def on_miss(self):
         '''Change the color of the ring to red'''
-        if not self.hit:
+        if not self.hit and self.active:
             self.gem.set_angle(721)
             self.gem.set_ring_color(kGemRingMiss)
             self.miss = True
@@ -79,9 +84,9 @@ class Gem(InstructionGroup):
         self.gem.set_angle(0)
         self.hit = False
         self.miss = False
-        self.active = True
+        self.active = False
+        self.exiting = False
         self.gem.set_cpos(self.cpos)
-        
     
     
     def check_timeout(self):
@@ -89,20 +94,31 @@ class Gem(InstructionGroup):
         return self.gem.get_angle() >= 360       
     
     
+    def activate(self):
+        '''Start the timer count down'''
+        self.active = True
+
+
+    def deactivate(self):
+        '''Stop the timer count down'''
+        self.active = False
+
+
     def exit(self):
         '''Indicator to animate off of the screen'''
-        self.active = False
+        self.exiting = True
         
     
     def on_update(self, dt):
         '''Timer should count down'''
-        if not self.check_timeout():
-            angle = self.gem.get_angle() + 360/self.timeout_len * dt
-            self.gem.set_angle(angle)
-        elif not self.hit:
-            self.on_miss()
+        if self.active:
+            if not self.check_timeout():
+                angle = self.gem.get_angle() + 360/self.timeout_len * dt
+                self.gem.set_angle(angle)
+            elif not self.hit:
+                self.on_miss()
             
-        if not self.active:
+        if self.exiting:
             # decrease the alpha
             a = self.gem.rcolor.a - kGemDecayRate * dt
             self.gem.set_alpha(a)
@@ -144,7 +160,7 @@ class TimedCEllipse(InstructionGroup):
         self.ccolor = Color(*kGemCircleColor)
         self.add( self.ccolor )
         csize = (2 * radius - self.width,) * 2
-        self.circ = CEllipse(cpos=cpos, csize=csize)
+        self.circ = CEllipse(cpos=cpos, csize=csize, texture=texture)
         self.add(self.circ)
 
   
@@ -194,10 +210,11 @@ class TimedCEllipse(InstructionGroup):
     
     
     
-'''
-Gem
-'''
+    
 
+
+
+# old gem representation
 '''
 class Gem(InstructionGroup):
     def __init__(self, chord, beat):
