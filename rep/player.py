@@ -91,8 +91,9 @@ class Player(InstructionGroup):
         pass
             
     def on_update(self):
+        # print(self.ticker.scheduler.get_time())
         if self.barNum != -1:
-            self.status = self.ticker.barStatus()
+            self.status = self.ticker.on_update()
         
         if self.status == "next":
             self.increment_bar()
@@ -107,7 +108,7 @@ class Player(InstructionGroup):
         
     def _catch_passes(self):
         for gem in self.ticker.active_gems:
-            currentBeat = self.timer.getRelativeTick()/(480*4)
+            currentBeat = self.ticker.getRelativeTick()/(480*4)
             targetBeat = self.targetGem.beat
             if not gem.done and abs(currentBeat - targetBeat) < self.slackWin:
                 self.score -= 1
@@ -130,7 +131,7 @@ class Player(InstructionGroup):
     def _temporal_hit(self):
         if not len(self.ticker.active_gems):
             return
-        currentBeat = self.timer.getRelativeTick()/(480*4)
+        currentBeat = self.ticker.getRelativeTick()/(480*4)
         targetBeat = self.targetGem.beat
         if abs(currentBeat - targetBeat) < self.slackWin:
             # if chord == str(gem.get_chord()):
