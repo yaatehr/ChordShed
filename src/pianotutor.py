@@ -73,7 +73,7 @@ class KeyboardGui(InstructionGroup):
         self.keys = []
         # self.blackKeys = []
         self.keyWidth = 50
-        self.anchor = (100, Window.height*(6.0/8))
+        self.anchor = (100, Window.height*(0.27))
         self.objects = AnimGroup()
         self.initializeFrame()
         self.add(self.objects)

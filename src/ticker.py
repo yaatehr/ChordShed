@@ -4,7 +4,7 @@ from rep.gem import Gem
 import sys
 sys.path.append('..')
 from src.chord import Chord, Key
-
+from kivy.core.window import Window
 kTicksPerQuarter = 480
 
 class Ticker(object):
@@ -16,60 +16,68 @@ class Ticker(object):
     bpm = 120
     numRepeats = 2
     measuresPerCall = 4
-    channel = 1
+    channel = 0
     vel = 80
     playQueues = 1
     noteDuration = 1
+    nowBarHeight = Window.height//2
+    barLenTicks = kTicksPerQuarter*4
+    gemRadius = 50
+    padding = gemRadius + 50
 
-    def __init__(self, songPattern, key, clock, nextBar=None):
-        self.gems, self.bars = self.initialize_bars(songPattern, key)
+    def __init__(self, songPattern, key, clock, increment_bar=None):
+        self.slack_timout = .2/(self.bpm/60)
+
+        self.gems, self.bars = self._initialize_bars(songPattern, key)
         self.synth = Synth('../data/FluidR3_GM.sf2')
         totalBeats = self.measuresPerCall*self.numRepeats*len(self.bars)*4
-        totalTime = totalBeats/self.bpm
-        data = [(0,0), (totalTime, totalBeats)]
+        totalTime = totalBeats/(self.bpm/60)
+        data = [(0,0), (totalTime, totalBeats*kTicksPerQuarter)]
         self.tempo = TempoMap(data=data)
+        self.num_bars = len(data)
         self.scheduler = Scheduler(clock, self.tempo)
-        self.nextBar = nextBar
+        self.increment_bar = increment_bar
         self.on_commands = [] # commands for a bar of call and response
         self.off_commands = []
         self.active_gems = []
         self.gem_commands = []
-        self.barTick = 0
-        self.currentbar = 0
+        self.bar_tick = 0
+        self.bar_index = 0
+
         # self.scheduler.set_generator(self.synth)
     
     
     def reset(self):
-        self._clear_gems()
-        self.gembar.activate(True)
-        self.cursor.restart()
-        self.game_over = False
-        self.objects.add( self.gembar )
-        self.objects.add( self.cursor )
-        self.objects.add(self.tutor)
+        #TODO
+        for i in range(len(self.num_bars)):
+            self.clear_bar(i)
+
+        self.bar_index = 0
     
     def create_bar(self, barIndex):
-        self.barTick = self.scheduler.get_tick()
-        self.initializeBarAudio(barIndex)
-        self.initializeBarGems(barIndex)
+        print('creating bar number %d' % barIndex)
+        self.bar_tick = quantize_tick_up(self.scheduler.get_tick())
+        self.active_gems = self.gems[barIndex]
+        self._initializeBarAudio(barIndex)
+        self._initializeBarGems(barIndex)
 
     def clear_bar(self, barIndex):
-        self.clearBarAudio(barIndex)
-        self.clearBarGems(barIndex)
+        self._clearBarAudio(barIndex)
+        self._clearBarGems(barIndex)
 
 
-    def getRelativeTick(self, tick):
+    def getRelativeTick(self):
         tick = self.scheduler.get_tick()
-        barLenTicks = kTicksPerQuarter*4
-        tick = (tick - self.barTick)%barLenTicks
+        tick = (tick - self.bar_tick)%self.barLenTicks
+        return tick
 
-    def getTargetGem(self, tick):
+    def getTargetGem(self):
         tick = self.getRelativeTick()
-        beatApprox = round(tick/barLenTicks)
+        beatApprox = round(tick/self.barLenTicks)
 
         #find gem by tick
         minDist = 9999999999
-        for gem in active_gems:
+        for gem in self.active_gems:
             gemDist = abs(gem.beat - beatApprox)
             if  gemDist < minDist:
                 minDist = gemDist
@@ -77,63 +85,107 @@ class Ticker(object):
             
         return targetGem
 
+    def on_update(self):
+        self.scheduler.on_update()
+        ticksEllapsed = self.scheduler.get_tick() - self.bar_tick
 
-    def initialize_bars(self, pattern, key):
+        if ticksEllapsed < self.barLenTicks:
+            return "call"
+        elif ticksEllapsed < self.numRepeats*self.barLenTicks:
+            return "response"
+        else:
+            return "next"
+
+
+    def _initialize_bars(self, pattern, key):
         gem_bars = []
         chord_bars = []
 
         for bar in pattern:
-            assert len(bar) > 1
+            numGems = len(bar)
+            assert numGems > 1
+            w = (Window.width - self.padding*numGems)//numGems
+            # h = Window.height//len(gems)
+            x = self.padding
+            y = self.nowBarHeight
             chords_and_ticks = []
+            gems = []
             for b in bar:
                 assert b[1] <= self.measuresPerCall*4 and b[1] > 0
-                chords_and_ticks.append((key.generateChord(b[0]), b[1]))
-            
-            gems = [ Gem(chord, beat) for chord, beat in chords_and_ticks ]
+                chord  = key.generateChord(b[0])
+                chords_and_ticks.append((chord, b[1]))
+                gem = Gem(chord, (x,y), self.gemRadius, self.slack_timout, b[1])
+                gems.append(gem)
+                x += w + self.padding
+
             chord_bars.append(chords_and_ticks)
             gem_bars.append(gems)
         return gem_bars, chord_bars
 
-    def initializeBarAudio(self, barIndex):
-        barTick = self.scheduler.get_tick()
+    def _initializeBarAudio(self, barIndex):
+        bar_tick = self.bar_tick
         bar = self.bars[barIndex]
+        print(self.bar_tick)
         assert self.numRepeats >= self.playQueues
         for i in range(self.playQueues):
             for chord, beat in bar:
-                tick = barTick + beat*kTicksPerQuarter
+                tick = bar_tick + beat*kTicksPerQuarter
+                print(tick)
                 self.on_commands.append(self.scheduler.post_at_tick(self._playChord, tick, chord))
                 self.off_commands.append(self.scheduler.post_at_tick(self._endChord, tick+kTicksPerQuarter*self.noteDuration, chord))
-            barTick += kTicksPerQuarter*4
-        # barTick += (self.numRepeats- self.playQueues)*4*kTicksPerQuarter
+            bar_tick += kTicksPerQuarter*4
+        # bar_tick += (self.numRepeats- self.playQueues)*4*kTicksPerQuarter
 
-    def clearBarAudio(self, barIndex):
+    def _clearBarAudio(self, barIndex):
         for c in self.on_commands:
             self.scheduler.remove(c)
         for c in self.off_commands:
             self.scheduler.remove(c)
-            c.execute()
+            # c.execute()
 
-    def initializeBarGems(self, barIndex):
-        barTick = self.scheduler.get_tick()
+    def _initializeBarGems(self, barIndex):
+        bar_tick = self.bar_tick
         bar = self.gems[barIndex]
+        # self.active_gems = bar
+        # self._drawGems(self.active_gems)
         for i in range(self.numRepeats):
             for gem in bar:
-                tick = barTick + gem.beat*kTicksPerQuarter
+                tick = bar_tick + gem.beat*kTicksPerQuarter
+                self.gem_commands.append(self.scheduler.post_at_tick(self._startGemTimer, tick, gem))
                 # self.gem_commands.append(self.)
+            bar_tick += kTicksPerQuarter*4
+
 
     def refreshBarGems(self, barIndex):
-        pass
+        for gem in self.active_gems:
+            gem.on_reset()
 
-    def clearBarGems(self, barIndex):
-        pass
+    def _clearBarGems(self, barIndex):
+        for gem in self.active_gems:
+            gem.on_miss()
         
 
-    def _drawGems(self, gems)
-        self.active_gems = [Gem()]
-    def _playChord(self, chord):
-        for note in chord:
+    def _startGemTimer(self, tick, gem):
+        ''' starts the gem timer'''
+        if not gem.hit:
+            gem.on_reset()
+
+    def _playChord(self, tick, chord):
+        print('chord playing', chord)
+        for note in chord._getMidiTones():
             self.synth.noteon(self.channel, note, self.vel)
     
-    def _endChord(self, chord):
-        for note in chord:
+    def _endChord(self, tick, chord):
+        for note in chord._getMidiTones():
             self.synth.noteoff(self.channel, note)
+
+
+    # def _drawGems(self, gems):
+    #     padding = 50
+    #     w = (Window.width - padding*len(gems))//len(gems)
+    #     # h = Window.height//len(gems)
+    #     x = padding
+    #     y = self.nowBarHeight
+    #     for gem in gems:
+    #         gem.set_pos((x,y))
+    #         x += w + padding
