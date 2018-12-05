@@ -10,7 +10,7 @@ from kivy.core.image import Image
 
 from math import cos, exp
 
-from .constants import *
+from rep.constants import *
 
 
 '''

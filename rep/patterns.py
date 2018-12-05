@@ -4,25 +4,51 @@ import sys
 sys.path.append('..')
 
 from src.chord import Chord, Key
+from kivy.core.window import Window
 
 
-# helper function(s)
 def create_bars(pattern, key):
+    '''
+    Turn tuple syntax into chord,beat , and gem, beat bar tuples
+    return (gem_bars, chord_bars)
+    '''
     gem_bars = []
     chord_bars = []
     for bar in pattern:
         chords_and_ticks = [(key.generateChord(b[0]), b[1]) for b in bar]
-        gems = [ Gem(chord, beat) for chord, beat in chords_and_ticks ]
+        gems = [ Gem(chord, (Window.width // 2, Window.height // 2), 50, 1, beat) for chord, beat in chords_and_ticks ]
         chord_bars.append(chords_and_ticks)
         gem_bars.append(gems)
     return gem_bars, chord_bars
 
 
+def patternReader(fileInput):
+    '''
+    Input takes one call (4 bars) per line. Entries will be parse as #chord, #beat
+
+    return an Array of tuples
+    '''
+    output = []
+    with open(fileInput, 'r') as inputFile:
+        for line in inputFile.readlines():
+            tokens = line.strip().split(',')
+            tokens = list(map(int, tokens))
+            pattern = list(zip(tokens[0::2], tokens[1::2]))
+            output.append(pattern)
+    return output
+
+# helper function(s)
+def create_gem_pattern_old(pattern, key):
+    gem_pattern = []
+    for bar in pattern:
+        gems = [ Gem( key.generateChord(b[0]), (50,50), 50, 1,  b[1]) for b in bar ]
+        gem_pattern.append( tuple(gems) )
+    return tuple( gem_pattern ) + tuple([None])
+
+
 class Pattern(object):
     def __init__(self, pattern, key):
-        gem_bars, chord_bars = create_bars(pattern, key)
-        self.gems = gem_bars
-        self.chords = chord_bars
+        self.pattern = create_gem_pattern_old(pattern, key)
         self.idx = -1
     
     def reset(self):
@@ -44,24 +70,9 @@ class Pattern(object):
 kTest_pattern = ( ((2,2),), ((5,4),), ((1,2),), ((3,1),(6,3)), ((4,2),(1,4)) )
 
 
-def patternReader(fileInput):
-    '''
-    Input takes one call (4 bars) per line. Entries will be parse as #chord, #beat
-    '''
-    output = []
-    with open(fileInput, 'r') as inputFile:
-        for line in inputFile.readlines():
-            tokens = line.strip().split(',')
-            pattern = zip(tokens[0::2], tokens[1::2])
-            output.append(pattern)
-
-
-    return output
 
 
 
 # declarations of the progressions that will be used in the game
 key = Key(key='C')
 Test_Pattern = Pattern(kTest_pattern, key)
-
-            

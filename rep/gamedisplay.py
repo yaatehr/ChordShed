@@ -2,7 +2,7 @@ from kivy.graphics.instructions import InstructionGroup
 from common.gfxutil import *
 
 from rep.gem import Gem
-from rep.patterns import Pattern
+# from rep.patterns import Pattern
 from src.pianotutor import KeyboardGui
 from time import sleep
 

@@ -20,7 +20,7 @@ Gem Representation using a TimedCEllipse
 - can be used with a 
 '''
 class Gem(InstructionGroup):
-    def __init__(self, chord, cpos, radius, timeout_len):
+    def __init__(self, chord, cpos, radius, timeout_len, beat=1):
         super(Gem, self).__init__()
         
         # save initial position and create gem
@@ -30,6 +30,7 @@ class Gem(InstructionGroup):
         
         # save chord
         self.chord = chord
+        self.beat = beat
         
         # save timeout time
         self.timeout_len = timeout_len
@@ -88,6 +89,9 @@ class Gem(InstructionGroup):
         '''Return True if a timeout has occured'''
         return self.gem.get_angle() >= 360       
     
+    def set_pos(self, cpos):
+        self.cpos = cpos
+        self.gem.cpos = cpos
     
     def exit(self):
         '''Indicator to animate off of the screen'''
