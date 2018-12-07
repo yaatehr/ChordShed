@@ -24,7 +24,7 @@ class Player(InstructionGroup):
         self.slackWin = self.ticker.slack_timout/2
         self.objects = AnimGroup()
         self.add(self.objects)
-        self.status = "next"
+        self.status = "startup"
         #end callback (at the end of measure)
         self.targetGem = None
         self.active_gems = []
@@ -37,10 +37,11 @@ class Player(InstructionGroup):
 
     def play_game(self):
         self.play = True
-        # self.clock.start()
         if not self.saveData:
             self.saveData = ScoreCard()
             # self.saveData.clear()
+        if self.barNum == -1:
+            self.status = "next"
 
     def pause_game(self):
         # self.clock.stop()
@@ -76,6 +77,9 @@ class Player(InstructionGroup):
             if self.saveData:
                 self.saveData.addGem(self.targetGem, True)
             self.targetGem = None
+            allHit = True
+            for gem in self.ticker.active_gems:
+                allHit = allHit and gem.hit
             if len(self.ticker.active_gems) == 1:
                 #we just finished a round
                 self.resetCallback()
@@ -100,6 +104,7 @@ class Player(InstructionGroup):
 
         if self.play:
             self._find_nearest_gem()
+            self._catch_passes()
             # self.display.on_update()
 
     def nextBar(self):
@@ -107,10 +112,13 @@ class Player(InstructionGroup):
         self._catch_passes()
         
     def _catch_passes(self):
+        if self.status == "call" or not self.targetGem:
+            return
         for gem in self.ticker.active_gems:
-            currentBeat = self.ticker.getRelativeTick()/(480*4)
-            targetBeat = self.targetGem.beat
-            if not gem.done and abs(currentBeat - targetBeat) < self.slackWin:
+            currentBeat = self.ticker.getRelativeTick()/(480)
+            targetBeat = gem.beat
+            if not gem.hit and currentBeat - targetBeat > self.slackWin:
+                print("catching pass")
                 self.score -= 1
                 gem.on_miss()
                 if self.saveData:
@@ -123,8 +131,8 @@ class Player(InstructionGroup):
         targetGem = self.ticker.getTargetGem()
         if targetGem is not self.targetGem:
             self.targetGem = targetGem
-            # print('new target chord')
-            # targetGem.focus() #TODO
+            # self.targetGem.on_hit()
+            print('new target chord')
             chord = targetGem.get_chord()
             self.update_target(chord)
 
@@ -136,6 +144,6 @@ class Player(InstructionGroup):
         if abs(currentBeat - targetBeat) < self.slackWin:
             # if chord == str(gem.get_chord()):
             #     hit = True
-                self.targetGem.on_hit()
-                return True
+            self.targetGem.on_hit()
+            return True
         return False

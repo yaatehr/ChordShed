@@ -13,8 +13,8 @@ class Ticker(object):
     This class assumes quarter notes as beats.
     becase every loop in this game is 4 measures, we will assume a loop to last 16 beats.  (4/4)
     '''
-    bpm = 120
-    numRepeats = 2
+    bpm = 60
+    numRepeats = 3
     measuresPerCall = 4
     channel = 0
     vel = 80
@@ -55,15 +55,18 @@ class Ticker(object):
         self.bar_index = 0
     
     def create_bar(self, barIndex):
-        print('creating bar number %d' % barIndex)
+        # print('creating bar number %d' % barIndex)
+        self.clear_bar(barIndex)
         self.bar_tick = quantize_tick_up(self.scheduler.get_tick())
         self.active_gems = self.gems[barIndex]
+        print(list(map(lambda x: x.beat, self.active_gems)))
+        # [gem.activate() for gem in self.active_gems]
         self._initializeBarAudio(barIndex)
         self._initializeBarGems(barIndex)
 
     def clear_bar(self, barIndex):
         self._clearBarAudio(barIndex)
-        self._clearBarGems(barIndex)
+        self._clearBarGems()
 
 
     def getRelativeTick(self):
@@ -73,15 +76,24 @@ class Ticker(object):
 
     def getTargetGem(self):
         tick = self.getRelativeTick()
-        beatApprox = round(tick/self.barLenTicks)
+        beatApprox = (tick/kTicksPerQuarter)
 
         #find gem by tick
+        targetGem = None
+
         minDist = 9999999999
         for gem in self.active_gems:
-            gemDist = abs(gem.beat - beatApprox)
+            # print(gem.beat)
+            # print(beatApprox, gem.beat)
+            gemDist = min(gem.beat - beatApprox, beatApprox - gem.beat)
+            # print(gemDist)
             if  gemDist < minDist:
                 minDist = gemDist
                 targetGem = gem
+        
+        # print("minimum dist: ", minDist)
+        # print("targetGem: ", gem.beat)
+        # print("beat approx: ", beatApprox)
             
         return targetGem
 
@@ -89,9 +101,9 @@ class Ticker(object):
         self.scheduler.on_update()
         ticksEllapsed = self.scheduler.get_tick() - self.bar_tick
 
-        if ticksEllapsed < self.barLenTicks:
+        if ticksEllapsed <= self.barLenTicks:
             return "call"
-        elif ticksEllapsed < self.numRepeats*self.barLenTicks:
+        elif ticksEllapsed <= self.numRepeats*self.barLenTicks:
             return "response"
         else:
             return "next"
@@ -125,53 +137,64 @@ class Ticker(object):
     def _initializeBarAudio(self, barIndex):
         bar_tick = self.bar_tick
         bar = self.bars[barIndex]
-        print(self.bar_tick)
+        # print(self.bar_tick)
         assert self.numRepeats >= self.playQueues
         for i in range(self.playQueues):
             for chord, beat in bar:
                 tick = bar_tick + beat*kTicksPerQuarter
-                print(tick)
                 self.on_commands.append(self.scheduler.post_at_tick(self._playChord, tick, chord))
                 self.off_commands.append(self.scheduler.post_at_tick(self._endChord, tick+kTicksPerQuarter*self.noteDuration, chord))
             bar_tick += kTicksPerQuarter*4
-        # bar_tick += (self.numRepeats- self.playQueues)*4*kTicksPerQuarter
 
     def _clearBarAudio(self, barIndex):
         for c in self.on_commands:
             self.scheduler.remove(c)
         for c in self.off_commands:
             self.scheduler.remove(c)
-            # c.execute()
+            c.execute()
 
     def _initializeBarGems(self, barIndex):
         bar_tick = self.bar_tick
         bar = self.gems[barIndex]
-        # self.active_gems = bar
-        # self._drawGems(self.active_gems)
         for i in range(self.numRepeats):
             for gem in bar:
                 tick = bar_tick + gem.beat*kTicksPerQuarter
-                self.gem_commands.append(self.scheduler.post_at_tick(self._startGemTimer, tick, gem))
-                # self.gem_commands.append(self.)
+                if i > 0:
+                    self.gem_commands.append(self.scheduler.post_at_tick(self._startGemTimer, tick, gem))
             bar_tick += kTicksPerQuarter*4
+            self.gem_commands.append(self.scheduler.post_at_tick(self._onCompleteMeasure, tick))
 
 
-    def refreshBarGems(self, barIndex):
+
+    def _refreshBarGems(self):
         for gem in self.active_gems:
             gem.on_reset()
+            gem.activate()
 
-    def _clearBarGems(self, barIndex):
+    def _clearBarGems(self):
         for gem in self.active_gems:
-            gem.on_miss()
+            gem.exit()
         
+    def _onCompleteMeasure(self, tick, temp=None):
+        if self.on_update() == "call":
+            return
+
+        allHit = True
+        for gem in self.active_gems:
+            allHit = allHit and gem.hit
+        if allHit:
+            # self.increment_bar()
+            print('increment bar')
+        else:
+            print('measure over, resetting gems')
+            self._refreshBarGems()
+
 
     def _startGemTimer(self, tick, gem):
         ''' starts the gem timer'''
-        if not gem.hit:
-            gem.on_reset()
+        gem.activate()
 
     def _playChord(self, tick, chord):
-        print('chord playing', chord)
         for note in chord._getMidiTones():
             self.synth.noteon(self.channel, note, self.vel)
     
