@@ -70,7 +70,7 @@ class MainWidget(BaseWidget) :
         self.detector = nd
         self.ticker = Ticker(self.pattern, key, self.clock)
         self.mixer.add(self.ticker.synth)
-        self.player = Player( self.ticker, self.clock, nd.updateTargetChord)
+        self.player = Player(self.ticker, self.clock, nd.updateTargetChord)
         self.detector.initializePlayer(self.player)
         self.canvas.add(self.player)
         self.canvas.add(self.gui)
