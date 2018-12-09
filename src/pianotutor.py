@@ -15,6 +15,8 @@ class GuiKey(InstructionGroup):
     activeColor = (.2,.3,.2,.5)
     correctColor = (.15,.86,.3, .5)
     incorrectColor = (1,.3,.5,.5)
+    highlightColor = (1,1,0,.6)
+
     white = (1,1,1, 1)
     black = (0,0,0, 1)
 
@@ -41,13 +43,17 @@ class GuiKey(InstructionGroup):
         self.add(self.color)
         self.add(self.rect)
 
-    def keyPress(self, correct= False):
+    def keyPress(self, correct= False, manualPress=False):
         if correct:
             self.activeColor = self.correctColor
             self.disactivateAnim = KFAnim((0, *self.activeColor), (self.timeout, *self.inactiveColor))
             self.activateAnim = KFAnim((0, *self.inactiveColor), (self.timeout, *self.activeColor))
-        else:
+        elif manualPress:
             self.activeColor = self.incorrectColor
+            self.disactivateAnim = KFAnim((0, *self.activeColor), (self.timeout, *self.inactiveColor))
+            self.activateAnim = KFAnim((0, *self.inactiveColor), (self.timeout, *self.activeColor))
+        else:
+            self.activeColor = self.highlightColor
             self.disactivateAnim = KFAnim((0, *self.activeColor), (self.timeout, *self.inactiveColor))
             self.activateAnim = KFAnim((0, *self.inactiveColor), (self.timeout, *self.activeColor))
             
@@ -81,9 +87,17 @@ class KeyboardGui(InstructionGroup):
         self.noteDetector = note_detector
 
     def updateGui(self):
+        highlights = self.noteDetector.targetMidi
         correct, incorrect = self.noteDetector.getActiveNotes()
-        [self.keys[x%(12*self.numOctaves)].keyPress(True) for x in correct]
-        [self.keys[x%(12*self.numOctaves)].keyPress(False) for x in incorrect]
+
+        [self.keys[x%(12*self.numOctaves)].keyPress(correct=True, manualPress=True) for x in correct]
+        [self.keys[x%(12*self.numOctaves)].keyPress(correct=False, manualPress=True) for x in incorrect]
+
+        if highlights:
+            # print(highlights)
+            for note in highlights:
+                if note not in correct + incorrect:
+                    self.keys[note%(12*self.numOctaves)].keyPress()
 
     def initializeKeys(self):
         padding = 10

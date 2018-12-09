@@ -64,7 +64,7 @@ class Player(InstructionGroup):
         if self.mode == "call":
             return
         if not correct:
-            self.on_miss(note)
+            self.on_miss_input(note)
 
     def on_hit(self):
         '''
@@ -85,7 +85,7 @@ class Player(InstructionGroup):
                 self.resetCallback()
         self.score += 1
 
-    def on_miss(self, note):
+    def on_miss_input(self, note):
         '''
         Called if note detector finds a note not currently in target gem.
         Updates score record appropriately
@@ -121,7 +121,8 @@ class Player(InstructionGroup):
             targetBeat = gem.beat
             # eps = .3
    
-            if not (gem.hit or gem.miss) and currentBeat - targetBeat >= self.slackWin:
+            if not (gem.hit or gem.miss) and currentBeat - targetBeat > self.slackWin*2:
+                print("caught pass - curr %f, target %f, slackWin %f, relativeTick %f" % (currentBeat, targetBeat, self.slackWin*480, self.ticker.getRelativeTick()))
                 self.score -= 1
                 gem.on_miss()
                 if self.saveData:
@@ -129,14 +130,17 @@ class Player(InstructionGroup):
                 # self.targetGem = None
 
     def _find_nearest_gem(self):
+        tick = self.ticker.getTick()
         targetGem = self.ticker.getTargetGem()
         if not targetGem:
+            print('no target gem: ', tick)
             return
         if targetGem is not self.targetGem:
             self.targetGem = targetGem
-            # self.targetGem.on_hit()
-            print('new target chord')
+            # self.targetGem.focus()
+            print('new target chord', tick)
             chord = targetGem.get_chord()
+            # self.chordKeys = 
             self.update_target(chord)
 
     def _temporal_hit(self):

@@ -33,6 +33,7 @@ class NoteDetector(object):
 
     def updateTargetChord(self, chord): #to be called from player class
         self.targetChord = chord
+        
         self.targetMidi = chord._getMidiTones()
         self.reset()        
         #TODO add clearing logic and refresh notes (we still want the mto decay)
@@ -82,7 +83,7 @@ class NoteDetector(object):
                 self.playingNotes.update({message.note: correctNote})
                 try:
                     vel = message.velocity if message.velocity else np.clip(message.value, 0 ,100)
-                except Error as a:
+                except Exception as a:
                     vel = np.clip(message.value, 0 ,100)
                     print(message)
                     print("failed to recognize")

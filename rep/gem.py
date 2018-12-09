@@ -66,7 +66,6 @@ class Gem(InstructionGroup):
             self.gem.set_ring_color(kGemRingMiss)
             self.miss = True
             self.standby = False
-
             print('missed')
     
     
@@ -88,6 +87,7 @@ class Gem(InstructionGroup):
         self.active = True
         self.gem.set_cpos(self.cpos)
         self.on_update(0)
+        print('gem reset')
         
     def activate(self):
         self.gem.set_angle(0)
@@ -151,7 +151,7 @@ class TimedCEllipse(InstructionGroup):
         self.width = radius * .2
         
         # code for creating the Line
-        self.rcolor = Color(*kGemRingColor)
+        self.rcolor = Color(*kGemRingColor, mode="rgba")
         self.rrgb = kGemRingColor
         PushMatrix()
         self.add(self.rcolor)
@@ -194,7 +194,7 @@ class TimedCEllipse(InstructionGroup):
     def set_ring_color(self, color):
         '''Set the ring color to indicate correct/incorrect input'''
         self.rrgb = color
-        self.rcolor.rgb = color
+        self.rcolor.rgba = color
     
     
     def set_alpha(self, a):
@@ -206,7 +206,7 @@ class TimedCEllipse(InstructionGroup):
     def set_angle(self, angle):
         '''Set the new angle of the ring'''
         self.angle = angle
-        self.rcolor.rgb = self.rrgb
+        self.rcolor.rgba = self.rrgb
         self.ring.circle = (*self.cpos, self.r, self.angle, 360)
         
     

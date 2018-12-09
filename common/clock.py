@@ -289,6 +289,6 @@ class Command(object):
         return 'cmd:%d' % self.tick
 
 # helper function for quantization:
-def quantize_tick_up(tick, grid=(kTicksPerQuarter / 4)) :
+def quantize_tick_up(tick, grid=(kTicksPerQuarter / 32)) :
     return int(tick - (tick % grid) + grid)
 
