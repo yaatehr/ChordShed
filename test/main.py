@@ -34,10 +34,17 @@ import numpy as np
 import bisect
 
 
-patterns = patternReader('./testpattern.txt')
+#run_main_widget = True # uncomment if this module is being run within the test/ directory
+run_main_widget = False # uncomment if this module is being run NOT within the test/ directory
+
+if run_main_widget:
+    fp = './testpattern.txt'
+else: 
+    fp = '../test/testpattern.txt'
+
+patterns = patternReader(fp)
 
 defaultKey = Key()
-
 
 
 class MainWidget(BaseWidget) :
@@ -45,16 +52,15 @@ class MainWidget(BaseWidget) :
     midiInput = None
     info = topleft_label()
     mixer = Mixer()
-    audio = Audio(2)
     playerSynth = Synth('../data/FluidR3_GM.sf2')
 
-    def __init__(self, masterPattern=patterns, key=defaultKey, fileName='testoutput.txt', callback=None):
+    def __init__(self, audio, masterPattern=patterns, key=defaultKey, fileName='testoutput.txt', callback=None):
         super(MainWidget, self).__init__()
         '''
         The main game instance, the pattern and keys are loaded before the screen is initialized
         ALL graphical components are controlled by the clock (update isnt' run if clock isn't playing)
          '''
-
+        self.audio = audio # we will pass in an audio class when necessary
 
         self.pattern = masterPattern
         self.key = key
@@ -77,10 +83,11 @@ class MainWidget(BaseWidget) :
         self.canvas.add(self.gui)
         
         #midi input state
+        self.info.parent = None # make sure the label widget does not have a parent
         self.add_widget(self.info)
         self.switchScreens = callback
 
-
+    
     def initialize_controller(self):
         if self.hasMidiInput():
             return True
@@ -93,10 +100,11 @@ class MainWidget(BaseWidget) :
             print('no input attached ', e)
         self.midiInput = inport
         return True
+    
 
     def hasMidiInput(self):
         return self.midiInput is not None
-
+    
     def on_key_down(self, keycode, modifiers):
         if keycode[1] == 't':
             self.player.load_pattern(Test_Pattern)

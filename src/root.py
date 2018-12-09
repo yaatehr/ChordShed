@@ -78,8 +78,8 @@ class HomeScreen(BaseWidget):
         buttonAnchor = (3*Window.width//4, Window.height//4)
         titleString = "ChordShed"
 
-        startButton = Button(pos=buttonAnchor, size=buttonSize, filePath="../images/start-game.png", callback=callBack)
-        statsButton = Button(pos=(buttonAnchor[0], buttonAnchor[1] - buttonSize[1]), size=buttonSize, filePath="../images/statistics.png", callback=None)
+        startButton = BButton(pos=buttonAnchor, size=buttonSize, filePath="../images/start-game.png", callback=callBack)
+        statsButton = BButton(pos=(buttonAnchor[0], buttonAnchor[1] - buttonSize[1]), size=buttonSize, filePath="../images/statistics.png", callback=None)
         title = Rectangle(pos=(150, Window.height//2), size=(3*Window.width//4, Window.height//4))
         label = CoreLabel(text=titleString, font_size=56)
         label.refresh()
@@ -122,7 +122,7 @@ class HomeScreen(BaseWidget):
 
 
 
-class Button(InstructionGroup):
+class BButton(InstructionGroup):
     activeColor = (.2,.3,.2,.2)
     inactiveColor = (0,0,0, 1)
     def __init__(self, pos=(500,500), size=(500,500), filePath='../images/start-game.png', callback=None):
@@ -168,6 +168,71 @@ class Button(InstructionGroup):
         #     self.color.rgba = self.disactivateAnim.eval(self.time)
         # else:
         #     self.color.rgba = self.inactiveColor
+
+
+class BButton(InstructionGroup):
+    activeColor = (.2,.3,.2,.8)
+    inactiveColor = (1,1,1,1)
+    def __init__(self, pos=(500,500), size=(500,500), filePath='../images/start-game.png', parent_widget=None, screen_name='home'):
+        super(BButton, self).__init__()
+        self.cpos= pos
+        self.csize=size
+        self.filePath= filePath
+        self.parent_widget = parent_widget
+        self.screen_name = screen_name
+
+        self.color = Color(*self.inactiveColor, mode='rgba')
+        self.add(self.color)
+        self.rect = CRectangle(cpos=pos, csize=size)
+        self.image = Image(filePath)
+
+        # label = CoreLabel(text=labelString, font_size=20)
+        # label.refresh()
+        # text = label.texture
+        self.rect.texture = self.image.texture
+        self.outline = CRectangle(cpos=pos, csize=(size[0] + 2, size[1] + 3))
+
+        self.add(self.outline)
+        self.add(self.rect)
+
+        self.time = 5
+        self.timeout = .2
+
+
+    def colliding_with_point(self, pos):
+        return self.cpos[0]-self.csize[0]//2 < pos[0] < self.cpos[0] + self.csize[0]//2 and self.cpos[1]-self.csize[1]//2 < pos[1] < self.cpos[1] + self.csize[1]//2
+
+
+    def buttonPress(self):
+        self.color.rgba = self.activeColor
+
+
+    def buttonRelease(self, in_bounds):
+        self.color.rgba = self.inactiveColor
+        if in_bounds:
+            if self.parent_widget and self.screen_name:
+                root = self.findRootWidget()
+                print("Button Released, go to screen", self.screen_name)
+                root.switchScreen(self.screen_name)
+
+
+    def findRootWidget(self):
+        root = self.parent_widget
+        while not isinstance(root, RootWidget):
+            root = root.parent
+        return root
+
+    '''
+    def on_update(self, dt):
+        # print('buttonOnupdate')
+        self.time += dt
+        # if self.disactivateAnim.is_active(self.time):
+        #     self.color.rgba = self.disactivateAnim.eval(self.time)
+        # else:
+        #     self.color.rgba = self.inactiveColor
+    '''
+
+
 
 class CRectangle(Rectangle):
     def __init__(self, **kwargs):
