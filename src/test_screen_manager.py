@@ -101,8 +101,10 @@ class RootWidget(BaseWidget) :
 
         if self.widget:
             self.remove_widget(self.widget)
+            '''
             if isinstance(self.widget, Game):
-                self.widget.audio = None
+                self.widget.audio.close() # this crashes
+            '''
             self.widget = None
         
         if new_widget:
