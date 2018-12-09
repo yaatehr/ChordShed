@@ -57,6 +57,10 @@ class MainWidget(BaseWidget) :
     
     def on_update(self) :
         self.test.on_update(kivyClock.frametime)
-        
+
+
+
+
+      
 if __name__ == '__main__':
      run(MainWidget)
