@@ -48,7 +48,7 @@ class Player(InstructionGroup):
         self.play = False
 
     def increment_bar(self):
-        if self.objects.size():
+        if self.objects.size(): #clear last bar
             self.ticker.clear_bar(self.barNum)
             [self.objects.remove(gem) for gem in self.ticker.active_gems]
             
@@ -95,40 +95,43 @@ class Player(InstructionGroup):
         pass
             
     def on_update(self):
-        # print(self.ticker.scheduler.get_time())
         if self.barNum != -1:
             self.status = self.ticker.on_update()
         
         if self.status == "next":
-            self.increment_bar()
+            return self.increment_bar()
 
         if self.play:
             self._find_nearest_gem()
-            self._catch_passes()
+            if self.status != "call":
+                self.catch_passes()
+            self.objects.on_update()
             # self.display.on_update()
 
     def nextBar(self):
         #TODO add terminal conditions
-        self._catch_passes()
+        pass
+        # self.catch_passes()
         
-    def _catch_passes(self):
+    def catch_passes(self, tickerCall=False):
         if self.status == "call" or not self.targetGem:
             return
         for gem in self.ticker.active_gems:
             currentBeat = self.ticker.getRelativeTick()/(480)
             targetBeat = gem.beat
-            if not gem.hit and currentBeat - targetBeat > self.slackWin:
-                print("catching pass")
+            # eps = .3
+   
+            if not (gem.hit or gem.miss) and currentBeat - targetBeat >= self.slackWin:
                 self.score -= 1
                 gem.on_miss()
                 if self.saveData:
                     self.saveData.addGem(self.targetGem, False)
-                self.targetGem = None
+                # self.targetGem = None
 
     def _find_nearest_gem(self):
-        if not self.ticker.active_gems:
-            return
         targetGem = self.ticker.getTargetGem()
+        if not targetGem:
+            return
         if targetGem is not self.targetGem:
             self.targetGem = targetGem
             # self.targetGem.on_hit()
@@ -137,8 +140,8 @@ class Player(InstructionGroup):
             self.update_target(chord)
 
     def _temporal_hit(self):
-        if not len(self.ticker.active_gems):
-            return
+        if not self.targetGem:
+            return False
         currentBeat = self.ticker.getRelativeTick()/(480*4)
         targetBeat = self.targetGem.beat
         if abs(currentBeat - targetBeat) < self.slackWin:

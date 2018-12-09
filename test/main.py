@@ -71,6 +71,7 @@ class MainWidget(BaseWidget) :
         self.ticker = Ticker(self.pattern, key, self.clock)
         self.mixer.add(self.ticker.synth)
         self.player = Player(self.ticker, self.clock, nd.updateTargetChord)
+        self.ticker.initialize_callbacks(self.player.increment_bar, self.player.catch_passes)
         self.detector.initializePlayer(self.player)
         self.canvas.add(self.player)
         self.canvas.add(self.gui)

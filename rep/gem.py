@@ -4,7 +4,7 @@ sys.path.append('..')
 from common.gfxutil import CEllipse
 
 from kivy.graphics.instructions import InstructionGroup
-from kivy.graphics import Color, Line
+from kivy.graphics import Color, Line, PushMatrix, PopMatrix
 
 from kivy.clock import Clock as kivyClock
 from kivy.core.image import Image
@@ -36,6 +36,7 @@ class Gem(InstructionGroup):
         self.timeout_len = timeout_len
         
         # save state
+        self.standby = True
         self.active = True
         self.hit = False
         self.miss = False
@@ -56,7 +57,7 @@ class Gem(InstructionGroup):
             self.gem.set_angle(721)
             self.gem.set_ring_color(kGemRingHit)
             self.hit = True
-        
+            self.standby = False
     
     def on_miss(self):
         '''Change the color of the ring to red'''
@@ -64,6 +65,9 @@ class Gem(InstructionGroup):
             self.gem.set_angle(721)
             self.gem.set_ring_color(kGemRingMiss)
             self.miss = True
+            self.standby = False
+
+            print('missed')
     
     
     def wiggle(self):
@@ -77,17 +81,26 @@ class Gem(InstructionGroup):
     
     def on_reset(self):
         self.gem.set_ring_color(kGemRingColor)
-        self.gem.set_angle(0)
+        self.gem.set_angle(761)
+        self.standby = True
         self.hit = False
         self.miss = False
         self.active = True
         self.gem.set_cpos(self.cpos)
+        self.on_update(0)
         
+    def activate(self):
+        self.gem.set_angle(0)
+        self.active = True
+        self.standby = False
     
     
     def check_timeout(self):
         '''Return True if a timeout has occured'''
-        return self.gem.get_angle() >= 360       
+        timeout = self.gem.get_angle() >= 360     
+        if timeout:
+            self.standby = False
+        return timeout
     
     def set_pos(self, cpos):
         self.cpos = cpos
@@ -100,11 +113,11 @@ class Gem(InstructionGroup):
     
     def on_update(self, dt):
         '''Timer should count down'''
+        if self.standby:
+            return
         if not self.check_timeout():
             angle = self.gem.get_angle() + 360/self.timeout_len * dt
             self.gem.set_angle(angle)
-        elif not self.hit:
-            self.on_miss()
             
         if not self.active:
             # decrease the alpha
@@ -139,6 +152,8 @@ class TimedCEllipse(InstructionGroup):
         
         # code for creating the Line
         self.rcolor = Color(*kGemRingColor)
+        self.rrgb = kGemRingColor
+        PushMatrix()
         self.add(self.rcolor)
         self.angle = 0
         self.ring = Line(circle=(*self.cpos, self.r, self.angle, 360), width=self.width, cap='none')
@@ -150,6 +165,7 @@ class TimedCEllipse(InstructionGroup):
         csize = (2 * radius - self.width,) * 2
         self.circ = CEllipse(cpos=cpos, csize=csize)
         self.add(self.circ)
+        PopMatrix()
 
   
     def set_cpos(self, cpos):
@@ -177,6 +193,7 @@ class TimedCEllipse(InstructionGroup):
     
     def set_ring_color(self, color):
         '''Set the ring color to indicate correct/incorrect input'''
+        self.rrgb = color
         self.rcolor.rgb = color
     
     
@@ -189,6 +206,7 @@ class TimedCEllipse(InstructionGroup):
     def set_angle(self, angle):
         '''Set the new angle of the ring'''
         self.angle = angle
+        self.rcolor.rgb = self.rrgb
         self.ring.circle = (*self.cpos, self.r, self.angle, 360)
         
     

@@ -13,7 +13,7 @@ class Ticker(object):
     This class assumes quarter notes as beats.
     becase every loop in this game is 4 measures, we will assume a loop to last 16 beats.  (4/4)
     '''
-    bpm = 60
+    bpm = 120
     numRepeats = 3
     measuresPerCall = 4
     channel = 0
@@ -21,12 +21,14 @@ class Ticker(object):
     playQueues = 1
     noteDuration = 1
     nowBarHeight = Window.height//2
-    barLenTicks = kTicksPerQuarter*4
-    gemRadius = 50
+    endBarTicks = kTicksPerQuarter*.5
+
+    barLenTicks = kTicksPerQuarter*4 + endBarTicks
+    gemRadius = 100
     padding = gemRadius + 50
 
-    def __init__(self, songPattern, key, clock, increment_bar=None):
-        self.slack_timout = .2/(self.bpm/60)
+    def __init__(self, songPattern, key, clock):
+        self.slack_timout = .5/(self.bpm/60)
 
         self.gems, self.bars = self._initialize_bars(songPattern, key)
         self.synth = Synth('../data/FluidR3_GM.sf2')
@@ -36,13 +38,16 @@ class Ticker(object):
         self.tempo = TempoMap(data=data)
         self.num_bars = len(data)
         self.scheduler = Scheduler(clock, self.tempo)
-        self.increment_bar = increment_bar
+        self.increment_bar = None
+        self.catch_passes = None
         self.on_commands = [] # commands for a bar of call and response
         self.off_commands = []
         self.active_gems = []
         self.gem_commands = []
         self.bar_tick = 0
         self.bar_index = 0
+
+
 
         # self.scheduler.set_generator(self.synth)
     
@@ -55,14 +60,13 @@ class Ticker(object):
         self.bar_index = 0
     
     def create_bar(self, barIndex):
-        # print('creating bar number %d' % barIndex)
-        self.clear_bar(barIndex)
         self.bar_tick = quantize_tick_up(self.scheduler.get_tick())
         self.active_gems = self.gems[barIndex]
         print(list(map(lambda x: x.beat, self.active_gems)))
         # [gem.activate() for gem in self.active_gems]
         self._initializeBarAudio(barIndex)
         self._initializeBarGems(barIndex)
+        # self.increment_bar
 
     def clear_bar(self, barIndex):
         self._clearBarAudio(barIndex)
@@ -83,6 +87,8 @@ class Ticker(object):
 
         minDist = 9999999999
         for gem in self.active_gems:
+            if gem.hit or gem.miss:
+                continue
             # print(gem.beat)
             # print(beatApprox, gem.beat)
             gemDist = min(gem.beat - beatApprox, beatApprox - gem.beat)
@@ -99,6 +105,9 @@ class Ticker(object):
 
     def on_update(self):
         self.scheduler.on_update()
+        slackWinOffset = int(self.slack_timout/2*kTicksPerQuarter)
+
+
         ticksEllapsed = self.scheduler.get_tick() - self.bar_tick
 
         if ticksEllapsed <= self.barLenTicks:
@@ -116,7 +125,7 @@ class Ticker(object):
         for bar in pattern:
             numGems = len(bar)
             assert numGems > 1
-            w = (Window.width - self.padding*numGems)//numGems
+            w = (Window.width)//5
             # h = Window.height//len(gems)
             x = self.padding
             y = self.nowBarHeight
@@ -126,9 +135,10 @@ class Ticker(object):
                 assert b[1] <= self.measuresPerCall*4 and b[1] > 0
                 chord  = key.generateChord(b[0])
                 chords_and_ticks.append((chord, b[1]))
+                x = w*b[1]
                 gem = Gem(chord, (x,y), self.gemRadius, self.slack_timout, b[1])
                 gems.append(gem)
-                x += w + self.padding
+                
 
             chord_bars.append(chords_and_ticks)
             gem_bars.append(gems)
@@ -142,9 +152,10 @@ class Ticker(object):
         for i in range(self.playQueues):
             for chord, beat in bar:
                 tick = bar_tick + beat*kTicksPerQuarter
+                print('audio ', tick)
                 self.on_commands.append(self.scheduler.post_at_tick(self._playChord, tick, chord))
                 self.off_commands.append(self.scheduler.post_at_tick(self._endChord, tick+kTicksPerQuarter*self.noteDuration, chord))
-            bar_tick += kTicksPerQuarter*4
+            bar_tick += self.barLenTicks
 
     def _clearBarAudio(self, barIndex):
         for c in self.on_commands:
@@ -154,30 +165,38 @@ class Ticker(object):
             c.execute()
 
     def _initializeBarGems(self, barIndex):
+        slackWinOffset = int(self.slack_timout/2*kTicksPerQuarter)
         bar_tick = self.bar_tick
         bar = self.gems[barIndex]
         for i in range(self.numRepeats):
             for gem in bar:
                 tick = bar_tick + gem.beat*kTicksPerQuarter
                 if i > 0:
-                    self.gem_commands.append(self.scheduler.post_at_tick(self._startGemTimer, tick, gem))
-            bar_tick += kTicksPerQuarter*4
-            self.gem_commands.append(self.scheduler.post_at_tick(self._onCompleteMeasure, tick))
+                    self.gem_commands.append(self.scheduler.post_at_tick(self._startGemTimer, tick - slackWinOffset, gem))
+                    print(tick)
+            bar_tick += self.barLenTicks
+            print('bar tick ', bar_tick)
+            self.gem_commands.append(self.scheduler.post_at_tick(self._onCompleteMeasure, bar_tick))
 
 
 
     def _refreshBarGems(self):
         for gem in self.active_gems:
             gem.on_reset()
-            gem.activate()
+            # gem.activate()
 
     def _clearBarGems(self):
         for gem in self.active_gems:
-            gem.exit()
+            pass
+            # gem.exit()
         
     def _onCompleteMeasure(self, tick, temp=None):
         if self.on_update() == "call":
+            # print('resetting gems')
+            # [gem.activate() for gem in self.active_gems]
+            self.bar_tick += self.endBarTicks #incrmemet bar to offset
             return
+
 
         allHit = True
         for gem in self.active_gems:
@@ -186,13 +205,19 @@ class Ticker(object):
             # self.increment_bar()
             print('increment bar')
         else:
-            print('measure over, resetting gems')
+            self.catch_passes(True)
             self._refreshBarGems()
+            print('measure over, gems reset')
+
+        self.bar_tick += self.endBarTicks #incrmemet bar to offset
+
 
 
     def _startGemTimer(self, tick, gem):
         ''' starts the gem timer'''
-        gem.activate()
+        if not gem.hit:
+            print('activating gem')
+            gem.activate()
 
     def _playChord(self, tick, chord):
         for note in chord._getMidiTones():
@@ -202,6 +227,9 @@ class Ticker(object):
         for note in chord._getMidiTones():
             self.synth.noteoff(self.channel, note)
 
+    def initialize_callbacks(self, increment, catch_passes):
+        self.increment_bar = increment
+        self.catch_passes = catch_passes
 
     # def _drawGems(self, gems):
     #     padding = 50
