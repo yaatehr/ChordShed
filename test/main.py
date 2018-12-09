@@ -47,22 +47,20 @@ patterns = patternReader(fp)
 defaultKey = Key()
 
 
-
 class MainWidget(BaseWidget) :
     playing = False
     midiInput = None
     info = topleft_label()
     mixer = Mixer()
-    audio = Audio(2)
     playerSynth = Synth('../data/FluidR3_GM.sf2')
 
-    def __init__(self, masterPattern=patterns, key=defaultKey, fileName='testoutput.txt', callback=None):
+    def __init__(self, audio, masterPattern=patterns, key=defaultKey, fileName='testoutput.txt', callback=None):
         super(MainWidget, self).__init__()
         '''
         The main game instance, the pattern and keys are loaded before the screen is initialized
         ALL graphical components are controlled by the clock (update isnt' run if clock isn't playing)
          '''
-
+        self.audio = audio # we will pass in an audio class when necessary
 
         self.pattern = masterPattern
         self.key = key

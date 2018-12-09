@@ -79,13 +79,16 @@ class RootWidget(BaseWidget) :
     def __init__(self):
         super(RootWidget, self).__init__()
 
-        self.widget = None
+        self.audio = Audio(2)
         self.home = HomeScreen()
+        
         self.home_button = ButtonWidget((0, Window.height-40), '../images/home.png', self.switchScreen, 'home')
         self.info = ButtonWidget((40, Window.height-40), '../images/information.png', self.switchScreen, 'info')
+        
         self.add_widget(self.home_button)
 
-        # initialize home screen
+        # save state and initialize home screen
+        self.widget = None
         self.switchScreen('home')
     
 
@@ -120,7 +123,7 @@ class RootWidget(BaseWidget) :
         Returns: Widget() or None
         '''
         if screenName == 'game':
-            return Game()
+            return Game(self.audio)
         elif screenName == 'score':
             return ScoreCard()
         elif screenName == 'home':
