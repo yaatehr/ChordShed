@@ -21,7 +21,8 @@ class Player(InstructionGroup):
         self.ticker = ticker
         self.clock = clock
         self.barNum = -1
-        self.slackWin = self.ticker.slack_timout/2
+        self.slackWin = self.ticker.slack_timout
+        print("initialize slack win at %f beats" % self.slackWin)
         self.objects = AnimGroup()
         self.add(self.objects)
         self.status = "startup"
@@ -147,7 +148,7 @@ class Player(InstructionGroup):
     def _temporal_hit(self):
         if not self.targetGem:
             return False
-        currentBeat = self.ticker.getRelativeTick()/(480*4)
+        currentBeat = self.ticker.getRelativeTick()/(480)
         targetBeat = self.targetGem.beat
         if abs(currentBeat - targetBeat) < self.slackWin:
             # if chord == str(gem.get_chord()):

@@ -54,10 +54,6 @@ class Ticker(object):
         self.gem_commands = []
         self.bar_tick = 0
         self.bar_index = 0
-
-
-
-        # self.scheduler.set_generator(self.synth)
     
     
     def reset(self):
@@ -176,7 +172,7 @@ class Ticker(object):
             c.execute()
 
     def _initializeBarGems(self, barIndex):
-        slackWinOffset = quantize_tick_up(self.slack_timout/2*kTicksPerQuarter)
+        slackWinOffset = quantize_tick_up(float(self.slack_timout)*2*kTicksPerQuarter)
         bar_tick = int(self.bar_tick)
         bar = self.gems[barIndex]
         for i in range(self.numRepeats):
@@ -184,6 +180,7 @@ class Ticker(object):
                 tick = bar_tick + gem.beat*kTicksPerQuarter
                 if i > 0:
                     self.gem_commands.append(self.scheduler.post_at_tick(self._startGemTimer, tick - slackWinOffset, gem))
+                    ticks_to_time(tick - slackWinOffset, self.bpm)
                     print(tick)
             bar_tick += self.barLenTicks
             print('bar tick ', bar_tick)

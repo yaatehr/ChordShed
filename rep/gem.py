@@ -117,6 +117,7 @@ class Gem(InstructionGroup):
             return
         if not self.check_timeout():
             angle = self.gem.get_angle() + 360/self.timeout_len * dt
+            angle = 360 if angle >= 360 else angle
             self.gem.set_angle(angle)
             
         if not self.active:
