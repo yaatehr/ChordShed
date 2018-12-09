@@ -122,7 +122,7 @@ class Player(InstructionGroup):
             targetBeat = gem.beat
             # eps = .3
    
-            if not (gem.hit or gem.miss) and currentBeat - targetBeat > self.slackWin*2:
+            if not (gem.hit or gem.miss) and currentBeat - targetBeat > self.slackWin:
                 print("caught pass - curr %f, target %f, slackWin %f, relativeTick %f" % (currentBeat, targetBeat, self.slackWin*480, self.ticker.getRelativeTick()))
                 self.score -= 1 #TODO add scoring logic
                 gem.on_miss()
@@ -139,7 +139,7 @@ class Player(InstructionGroup):
         if targetGem is not self.targetGem:
             self.targetGem = targetGem
             # self.targetGem.focus()
-            print('new target chord', tick)
+            print('new target chord %d, on beat %d' % (tick, self.targetGem.beat))
             chord = targetGem.get_chord()
             # self.chordKeys = 
             self.update_target(chord)

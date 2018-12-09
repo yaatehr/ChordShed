@@ -7,6 +7,12 @@ from src.chord import Chord, Key
 from kivy.core.window import Window
 kTicksPerQuarter = 480
 
+
+def ticks_to_time(ticks, bpm):
+    return 60*ticks/kTicksPerQuarter/bpm
+def beats_to_time(beats, bpm):
+    return 60*beats/bpm
+
 class Ticker(object):
     ''' 
     Maps beat patterns to ticks (time stamps) and plays the call of the call and response (if enabled)
@@ -15,7 +21,7 @@ class Ticker(object):
     '''
     bpm = 120
     numRepeats = 3
-    measuresPerCall = 4
+    measuresPerCall = 1
     channel = 0
     vel = 80
     playQueues = 1
@@ -28,13 +34,15 @@ class Ticker(object):
     padding = gemRadius + 50
 
     def __init__(self, songPattern, key, clock):
-        self.slack_timout = .5/(self.bpm/60)
+        self.slack_timout = beats_to_time(.5, self.bpm)
 
         self.gems, self.bars = self._initialize_bars(songPattern, key)
         self.synth = Synth('../data/FluidR3_GM.sf2')
         totalBeats = self.measuresPerCall*self.numRepeats*len(self.bars)*4
-        totalTime = totalBeats/(self.bpm/60)
-        data = [(0,0), (totalTime, totalBeats*kTicksPerQuarter)]
+        totalTime = beats_to_time(totalBeats, self.bpm)
+        totalOffsetTicks = self.endBarTicks*totalBeats/4
+        totalTicks = totalBeats/4*self.barLenTicks
+        data = [(0,0), ((totalTime + ticks_to_time(totalOffsetTicks, self.bpm))*2, totalTicks*2)]
         self.tempo = TempoMap(data=data)
         self.num_bars = len(data)
         self.scheduler = Scheduler(clock, self.tempo)
@@ -90,10 +98,10 @@ class Ticker(object):
         minDist = 9999999999
         for gem in self.active_gems:
             if gem.hit or gem.miss:
+                # print("skipping hit gem (target) ", tick)
                 continue
             # print(gem.beat)
-            # print(beatApprox, gem.beat)
-            gemDist = min(gem.beat - beatApprox, beatApprox - gem.beat)
+            gemDist = min(abs(gem.beat - beatApprox), abs(beatApprox - gem.beat))
             # print(gemDist)
             if  gemDist < minDist:
                 minDist = gemDist
@@ -233,13 +241,3 @@ class Ticker(object):
     def initialize_callbacks(self, increment, catch_passes):
         self.increment_bar = increment
         self.catch_passes = catch_passes
-
-    # def _drawGems(self, gems):
-    #     padding = 50
-    #     w = (Window.width - padding*len(gems))//len(gems)
-    #     # h = Window.height//len(gems)
-    #     x = padding
-    #     y = self.nowBarHeight
-    #     for gem in gems:
-    #         gem.set_pos((x,y))
-    #         x += w + padding
