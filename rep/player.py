@@ -82,7 +82,8 @@ class Player(InstructionGroup):
                 allHit = allHit and gem.hit
             if len(self.ticker.active_gems) == 1:
                 #we just finished a round
-                self.resetCallback()
+                self.increment_bar()
+        #TODO add scoring logic
         self.score += 1
 
     def on_miss_input(self, note):
@@ -91,7 +92,7 @@ class Player(InstructionGroup):
         Updates score record appropriately
         '''
         self.score -= 1
-        # self.saveData.missedNote(note, self.targetGem) TODO
+        # self.saveData.missedNote(note, self.targetGem) TODO add score logic
         pass
             
     def on_update(self):
@@ -123,7 +124,7 @@ class Player(InstructionGroup):
    
             if not (gem.hit or gem.miss) and currentBeat - targetBeat > self.slackWin*2:
                 print("caught pass - curr %f, target %f, slackWin %f, relativeTick %f" % (currentBeat, targetBeat, self.slackWin*480, self.ticker.getRelativeTick()))
-                self.score -= 1
+                self.score -= 1 #TODO add scoring logic
                 gem.on_miss()
                 if self.saveData:
                     self.saveData.addGem(self.targetGem, False)
