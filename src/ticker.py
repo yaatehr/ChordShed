@@ -20,7 +20,7 @@ class Ticker(object):
     This class assumes quarter notes as beats.
     becase every loop in this game is 4 measures, we will assume a loop to last 16 beats.  (4/4)
     '''
-    bpm = 200
+    bpm = 400
     numRepeats = 3
     measuresPerCall = 1
     channel = 0

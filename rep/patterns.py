@@ -15,7 +15,7 @@ def create_bars(pattern, key):
     gem_bars = []
     chord_bars = []
     for bar in pattern:
-        chords_and_ticks = [(key.generateChord(b[0]), b[1]) for b in bar]
+        chords_and_ticks = [(key.generateChord(int(b[0]), inversion = round(10*(b[0]%1))), b[1]) for b in bar]
         gems = [ Gem(chord, (Window.width // 2, Window.height // 2), 50, 1, beat) for chord, beat in chords_and_ticks ]
         chord_bars.append(chords_and_ticks)
         gem_bars.append(gems)
