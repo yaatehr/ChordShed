@@ -30,10 +30,14 @@ from src.buttonwidget import *
 from src.crectangle import *
 
 from test.main import MainWidget as Game
-from test.main import patterns, defaultKey
+from test.main import patterns
+from src.chord import Key
 
 
-
+MAJ = 0
+MIN = 1
+AUG = 2
+DIM = 3
 
 
 
@@ -61,7 +65,6 @@ def create_dropdown(options, width, height, pos):
 
     # return mainbutton (for widget addition) and dropdown (for binding to on_select)
     return mainbutton, dd
-
 
 
 
@@ -252,9 +255,35 @@ class HomeScreen(Widget):
         self.dd_p.bind(on_select=self.set_pattern)
 
         # Load keys information and create dropdown
-        self.keys_dict = {'A Major': defaultKey, 'A#/Bb Major': defaultKey, 'B Major': defaultKey, 'C Major': defaultKey, 'C#/Db Major': defaultKey, 'D Major': defaultKey, 'D#/Eb Major': defaultKey, 'E Major': defaultKey, 'F Major': defaultKey, 'F#/Gb Major': defaultKey, 'G Major': defaultKey, 'G#/Ab Major': defaultKey,
-                          'A Minor': defaultKey, 'A#/Bb Minor': defaultKey, 'B Minor': defaultKey, 'C Minor': defaultKey, 'C#/Db Minor': defaultKey, 'D Minor': defaultKey, 'D#/Eb Minor': defaultKey, 'E Minor': defaultKey, 'F Minor': defaultKey, 'F#/Gb Minor': defaultKey, 'G Minor': defaultKey, 'G#/Ab Minor': defaultKey}
+        self.keys_dict = {'A Major':     Key(key='A', quality=MAJ), 
+                          'A#/Bb Major': Key(key='Bb', quality=MAJ), 
+                          'B Major':     Key(key='B', quality=MAJ), 
+                          'C Major':     Key(key='C', quality=MAJ), 
+                          'C#/Db Major': Key(key='C#', quality=MAJ), 
+                          'D Major':     Key(key='D', quality=MAJ), 
+                          'D#/Eb Major': Key(key='Eb', quality=MAJ), 
+                          'E Major':     Key(key='E', quality=MAJ), 
+                          'F Major':     Key(key='F', quality=MAJ), 
+                          'F#/Gb Major': Key(key='F#', quality=MAJ), 
+                          'G Major':     Key(key='G', quality=MAJ), 
+                          'G#/Ab Major': Key(key='Ab', quality=MAJ),
+                          
+                          'A Minor':     Key(key='A', quality=MIN), 
+                          'A#/Bb Minor': Key(key='Bb', quality=MIN), 
+                          'B Minor':     Key(key='B', quality=MIN), 
+                          'C Minor':     Key(key='C', quality=MIN), 
+                          'C#/Db Minor': Key(key='C#', quality=MIN), 
+                          'D Minor':     Key(key='D', quality=MIN), 
+                          'D#/Eb Minor': Key(key='Eb', quality=MIN), 
+                          'E Minor':     Key(key='E', quality=MIN), 
+                          'F Minor':     Key(key='F', quality=MIN), 
+                          'F#/Gb Minor': Key(key='F#', quality=MIN), 
+                          'G Minor':     Key(key='G', quality=MIN), 
+                          'G#/Ab Minor': Key(key='Ab', quality=MIN)}
         
+
+        ALL_KEYS = ['C', 'C#', 'D', 'Eb', 'E', "F", 'F#', 'G', 'Ab', 'A', 'Bb', 'B']
+
         self.key = None
         # Create dropdown for keys
         ddk_anchor = (ddp_anchor[0], ddp_anchor[1] - buttonSize[1])
