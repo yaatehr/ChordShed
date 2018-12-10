@@ -33,7 +33,7 @@ class NoteDetector(object):
         #TODO add clearing logic and refresh notes (we still want the mto decay)
 
     def reset(self, hard=False):
-        self.playingNotes.clear()
+        # self.playingNotes.clear()
         if hard:
             self.targetMidi = None
             self.targetChord = None
@@ -53,8 +53,6 @@ class NoteDetector(object):
                 self.synth.noteoff(0, message.note)
                 if message.note in self.correctNotes:
                     self.correctNotes.remove()
-                if self.onInput:
-                    self.onInput(message.note, False)
 
         elif message.type == 'note_on' or message.type == 'polytouch':
             # print(message)

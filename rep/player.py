@@ -13,12 +13,10 @@ import copy
 class Player(InstructionGroup):
     def __init__(self, ticker, clock, pattern, targetCallback = None, pull_gems=None):
         super(Player, self).__init__()
-        self.score = 0
         self.play = False
         self.scoreCard = None
         self.pattern = pattern
         self.update_target = targetCallback
-        self.mode = "call"
         self.ticker = ticker
         self.clock = clock
         self.barNum = -1
@@ -65,7 +63,7 @@ class Player(InstructionGroup):
         calls the appropriate on hit or on miss function
         let notes that belong in a chord slide
         '''
-        if self.mode == "call": #don't score during call mode
+        if self.status == "call": #don't score during call status
             return
         if not correct:
             self.on_miss_input(note)
@@ -76,6 +74,9 @@ class Player(InstructionGroup):
         This checks if the hit was within the slack window (if necessary), and
         updates the gem record and score appropriately
         '''
+        if self.status == "call":
+            return 
+
         if self._temporal_hit():
             print('past temp hit')
             if self.scoreCard:
@@ -89,16 +90,12 @@ class Player(InstructionGroup):
             if len(self.ticker.active_gems) == 1:
                 #we just finished a round
                 self.increment_bar()
-        #TODO add scoring logic
-        self.score += 1
 
     def on_miss_input(self, note):
         '''
         Called if note detector finds a note not currently in target gem.
         Updates score record appropriately
         '''
-        self.score -= 1
-        # self.score.add
         if self.targetGem:
             self.scoreCard.on_chord_miss(self.barNum, self.targetGem.copy_gem(), note)
         else:
@@ -135,7 +132,6 @@ class Player(InstructionGroup):
    
             if not (gem.hit or gem.miss) and currentBeat - targetBeat > self.slackWin/2:
                 # print("caught pass - curr %f, target %f, slackWin %f, relativeTick %f" % (currentBeat, targetBeat, self.slackWin*480, self.ticker.getRelativeTick()))
-                self.score -= 1 #TODO add scoring logic
                 gem.on_miss()
                 if self.scoreCard:
                     self.scoreCard.on_chord_miss(self.barNum, self.targetGem.copy_gem(), self.pull_active_gems())

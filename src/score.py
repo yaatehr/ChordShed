@@ -122,6 +122,7 @@ class BarData(object):
     Abstraction for the score data of each bar
     '''
     beatsPerMeasure = 4
+    scorePenalty = 25
 
     def __init__(self, index, barPattern):
         self.noteMisses = dict()
@@ -130,7 +131,7 @@ class BarData(object):
             self.noteMisses[beat] = dict()
             self.chordHits[beat] = dict()
 
-        self.numGems = self.chordHits.keys()
+        self.numGems = len(self.chordHits.keys())
         self.noteMisses[-1] = dict() # for miscelaneous misses
         self.score = 0
 
@@ -142,14 +143,14 @@ class BarData(object):
                 self.noteMisses[gem.beat][note] += 1
             else:
                 self.noteMisses[gem.beat][note] = 1
-            self.score -= 10
+            self.score -= self.scorePenalty
         elif isinstance(notes, list):
             for note in notes:
                 if note in self.noteMisses.keys():
                     self.noteMisses[gem.beat][note] += 1
                 else:
                     self.noteMisses[gem.beat][note] = 1
-                self.score -= 10
+                self.score -= self.scorePenalty
         elif isinstance(notes, tuple):
             #they have already been penalized for individual
             correct, incorrect = notes
@@ -173,18 +174,18 @@ class BarData(object):
         self.score += 100
 
     def addMiscMiss(self, note):
-        self.score -= 10
+        self.score -= self.scorePenalty
         if note in self.noteMisses[-1].keys():
             self.noteMisses[-1][note] += 1
         else:
             self.noteMisses[-1][note] = 1
 
     def addPerfectBar(self, responsesRemaining):
-        print('perfect bar! ', notes)
+        print('perfect bar! ', responsesRemaining)
 
         for beat in self.chordHits.keys():
             for note in self.chordHits[beat].keys():
-                self.chordHits[beat][note] = responsesRemaining + 1
+                self.chordHits[beat][note] += responsesRemaining
         self.score += 100*(responsesRemaining*self.numGems)*1.5 + 100
 
     def getHistogram(self, beat, showMisc=False):
