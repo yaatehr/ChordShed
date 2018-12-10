@@ -38,7 +38,7 @@ MAJOR_STEPS = (0, 2, 4, 5, 7, 9, 11)
 MINOR_STEPS = (0, 2, 3, 5, 7, 8, 11)
 
 class Chord(object):
-    def __init__(self, key='C',  octave=0, inversion=0, quality=MAJ, keyAnchor=60):
+    def __init__(self, key='C',  octave=0, inversion=0, quality=MAJ, keyAnchor=60, customMidi=None):
         self.keyOffset = 60-keyAnchor
         key = 'C' if key not in ALL_KEYS else key
         self.key = key
@@ -46,6 +46,8 @@ class Chord(object):
         self.octave = octave
         self.inversion = np.clip(inversion, 0, 2)
         self.quality = quality
+        self.customMidi = customMidi
+        self.midiRep = None
         self.midiRep = self._getMidiTones()
             
     def __str__(self):
@@ -57,17 +59,27 @@ class Chord(object):
         return string_rep
     
     def _getMidiTones(self):
-        midiRep = ALL_CHORDS[self.quality][self.key_idx]
+        if self.customMidi:
+            return self.customMidi
+        elif self.midiRep is not None:
+            return self.midiRep
+        midiRep = np.copy(ALL_CHORDS[self.quality][self.key_idx])
         midiRep += 12*self.octave
         midiRep[:self.inversion] += 12 + self.keyOffset
         return sorted(midiRep)
 
 
 class Key(object):
-    def __init__(self, key='C', quality=MAJ):
+    def __init__(self, range=[48,72], key='C', quality=MAJ):
         key = 'C' if key not in ALL_KEYS else key
         self.key = key
         self.quality = np.clip(quality, MAJ, MIN)
+        self.range = range
+        tonic = ALL_KEYS.index(self.key)
+        baseChord = Chord(key=ALL_KEYS[tonic%12])
+        tones = baseChord._getMidiTones()
+        self.octaveOffset = (tones[0] - self.range[0])//12
+
 
     def generateChord(self, degree, octave=0, inversion=0):
         degree = np.clip(degree, 1, 7)
@@ -81,7 +93,7 @@ class Key(object):
             steps = MINOR_STEPS[degree-1]
         
         chordKey = ALL_KEYS[(tonic+steps)%12]
-        return Chord(key=chordKey, octave=octave, inversion=inversion, quality=chord_quality)
+        return Chord(key=chordKey, octave=octave-self.octaveOffset, inversion=inversion, quality=chord_quality)
     
     def parsePhrase(self, arr):
         # Pass in dicts with the definitions here. We can automate the dict creating process

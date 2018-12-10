@@ -202,6 +202,8 @@ class Ticker(object):
             gem.activate()
 
     def _playChord(self, tick, chord):
+        print(chord._getMidiTones())
+        print(chord.octave)
         for note in chord._getMidiTones():
             self.synth.noteon(self.channel, note, self.vel)
     
