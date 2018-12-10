@@ -18,7 +18,7 @@ from kivy.graphics import PushMatrix, PopMatrix, Translate, Scale, Rotate
 
 from kivy.core.window import Window
 from kivy.core.text import Label as CoreLabel
-
+import os
 from rep.gem import Gem
 from rep.player import Player
 from src.notedetector import NoteDetector
@@ -32,43 +32,20 @@ from rep.patterns import *
 import random
 import numpy as np
 import bisect
+import pickle
 
 
 #run_main_widget = True # uncomment if this module is being run within the test/ directory
 run_main_widget = False # uncomment if this module is being run NOT within the test/ directory
 
-if run_main_widget:
-    fp1 = './testpattern.txt'
-    fp2 = './testpattern2.txt'
-    fp3 = './testpattern3.txt'
-else: 
-    fp1 = '../test/testpattern.txt'
-    fp2 = '../test/testpattern2.txt'
-    fp3 = '../test/testpattern3.txt'
 
-pattern1 = patternReader(fp1)
-pattern2 = patternReader(fp2)
-pattern3 = patternReader(fp3)
-
-
-def loadPaths():
-    for (dirpath, dirnames, filenames) in os.walk(os.path.join(os.path.dirname('__file__'), '../patterns')):
-        patternDict = {file: patternReader(os.path.join(dirpath, file)) for file in filenames}
-        print(patternDict.keys())
-    return patternDict
-
-loadPaths()
-
-patterns = (pattern1, pattern2, pattern3)
-
-defaultKey = Key()
 
 
 class MainWidget(BaseWidget) :
     playing = False
     info = topleft_label()
 
-    def __init__(self, masterPattern=patterns, key=None, fileName='testoutput.txt', noteDetector=None, mixer=None, callback=None):
+    def __init__(self, masterPattern=None, key=None, fileName='testoutput.txt', noteDetector=None, mixer=None, callback=None):
         super(MainWidget, self).__init__()
         '''
         The main game instance, the pattern and keys are loaded before the screen is initialized
@@ -86,7 +63,8 @@ class MainWidget(BaseWidget) :
         self.detector = noteDetector
         self.ticker = Ticker(self.pattern, key, self.clock)
         self.mixer.add(self.ticker.synth)
-        self.player = Player(self.ticker, self.clock, self.pattern, noteDetector.updateTargetChord, noteDetector.getActiveNotes, scoreCallback=callback)
+        self.player = Player(
+            self.ticker, self.clock, self.pattern, self.key, noteDetector.updateTargetChord, noteDetector.getActiveNotes, callback)
         self.ticker.initialize_callbacks(self.player.increment_bar, self.player.catch_passes)
         self.detector.initializePlayer(self.player)
         self.canvas.add(self.player)

@@ -32,10 +32,6 @@ from src.score import *
 
 from test.main import MainWidget as Game
 
-from test.main import pattern1, pattern2
-from src.chord import Key
-
-from test.main import patterns
 from src.chord import Key, Chord
 
 
@@ -79,7 +75,7 @@ class RootWidget(BaseWidget) :
     key_range = [48, 72]
     midiInput = None
     mixer = Mixer()
-    playerSynth = Synth('../data/FluidR3_GM.sf2')
+    playerSynth = Synth('../bank/FluidR3_GM.sf2')
     def __init__(self):
         super(RootWidget, self).__init__()
         # config
@@ -104,7 +100,7 @@ class RootWidget(BaseWidget) :
         self.pattern = None
         self.key = None
 
-        self.saved_data = SaveData()
+        # self.saved_data = SaveData()
     
 
     def switchScreen(self, screenName, **kwargs):
@@ -152,10 +148,6 @@ class RootWidget(BaseWidget) :
             if 'pattern' in kwargs and 'key' in kwargs:
                 return ScoreViewer( pattern=kwargs['pattern']\
                     , key=kwargs['key'])
-
-                    , mixer=self.mixer\
-                    , callback=retrieve_score_card)
-
             
         elif screenName == 'score' and self.score_card:
             return ScoreCard(self.score_card)
@@ -287,9 +279,7 @@ class HomeScreen(Widget):
         
 
         # Load patterns information and create dropdown
-        self.patterns_dict = {'Patt. 1: Parallels': patterns[0], 
-                              'Patt. 2: V - I': patterns[1], 
-                              'Patt. 3: Short Song': patterns[2]}
+        self.patterns_dict = loadPatterns()
         self.pattern = None
         # Create dropdown for patterns
         ddp_anchor = (Window.width//4 - buttonSize[0]//2, buttonAnchor[1])
@@ -394,7 +384,8 @@ class ScoreViewer(Widget):
 
 
     def load_save_data(self, pattern, key):
-        self.data = SaveData(pattern, key)
+        # self.data = SaveData(pattern, key)
+        pass
 
 
     def on_key_down(self, keycode, modifiers):
@@ -426,24 +417,24 @@ class ScoreViewer(Widget):
 
     def __str__(self):
         return "ScoreViewer"
-class SaveData(object):
-    def __init__(self):
-        super(SaveData, self).__init__(size=(Window.width, Window.height))
-        self.card = None
-        self.bar_data = []
+# class SaveData(object):
+#     def __init__(self):
+#         super(SaveData, self).__init__(size=(Window.width, Window.height))
+#         self.card = None
+#         self.bar_data = []
 
 
-    def load_card_info(self, card):
-        self.card = card
-        for bar in self.card.bars:
-            bar_data = [bar.getHistogram(b[1]) for b in bar]
-            self.bar_data.append( bar_data )
-        return self.bar_data
+#     def load_card_info(self, card):
+#         self.card = card
+#         for bar in self.card.bars:
+#             bar_data = [bar.getHistogram(b[1]) for b in bar]
+#             self.bar_data.append( bar_data )
+#         return self.bar_data
 
 
-    def clear_card(self):
-        self.card = None
-        self.bar_data = []
+#     def clear_card(self):
+#         self.card = None
+#         self.bar_data = []
 
 
 

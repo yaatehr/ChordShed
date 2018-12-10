@@ -99,6 +99,8 @@ class Key(object):
         # Pass in dicts with the definitions here. We can automate the dict creating process
         return [self.generateChord(*tup) for tup in arr]
 
+    def __str__(self):
+        return "Key-"+self.key
 
 def compare_chords(chord1, chord2):
     return chord1.toString() == chord2.toString()       
