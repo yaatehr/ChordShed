@@ -34,6 +34,9 @@ from test.main import patterns
 from src.chord import Key
 
 
+from time import sleep
+
+
 MAJ = 0
 MIN = 1
 AUG = 2
@@ -246,7 +249,9 @@ class HomeScreen(Widget):
         
 
         # Load patterns information and create dropdown
-        self.patterns_dict = {'Pattern 1': patterns, 'Pattern 2': patterns, 'Pattern 3': patterns}
+        self.patterns_dict = {'Pattern 1': patterns, 
+                              'Pattern 2': patterns, 
+                              'Pattern 3': patterns}
         self.pattern = None
         # Create dropdown for patterns
         ddp_anchor = (Window.width//4 - buttonSize[0]//2, buttonAnchor[1])
@@ -381,6 +386,9 @@ class InformationPage(Widget):
 
 
 
+
+
+
 class PianoCalibrator(Widget):
     def __init__(self):
         super(PianoCalibrator, self).__init__(size=(Window.width, Window.height))
@@ -399,9 +407,15 @@ class PianoCalibrator(Widget):
         self.info = topleft_label()
         self.add_widget(self.info)
 
+
+    def on_key_down(self, keycode, modifiers):
+        if keycode[1] == '1':
+            return False
+
+
     def on_update(self):
         self.info.text = 'Piano Calibration'
-        self.info.text += '\t\t\Press "1" to return home'
+        self.info.text += '\t\tPress "1" to return home'
 
         if self.calibration_step == 0:
             if self.parent._had_midi_input():
@@ -413,6 +427,53 @@ class PianoCalibrator(Widget):
         elif self.calibration_step == 2:
             pass
 
+
+
+
+
+
+
+class SavedGameData(object):
+    def __init__(self, pattern, scores, notes):
+        self.pattern = pattern # array of array of tuples in format (roman numeral, beat)
+        self.scores = scores # array of scores for each bar in the pattern
+        self.notes = notes # list of notes played for each bar in the pattern
+
+        max_score = sum([len(bar) for bar in pattern])
+        self.total_accuracy = sum(self.scores)/max_score
+
+        self.idx = 0
+
+
+    def add_notes_and_score(self, notes, score):
+        self.notes.append(notes)
+        self.scores.append(score)
+
+
+    def generate_bar_info(self):
+        bar = self.pattern[self.idx]
+        bar_accuracy = self.score[self.idx]/len(bar)
+        bar_notes = self.notes[self.idx]
+        return tuple(bar, bar_accuracy, bar_notes)
+
+
+    def generate_next_bar(self):
+        if self.idx + 1 < len(self.pattern):
+            self.idx += 1
+            self.generate_bar_info()
+
+
+    def generate_previous_bar(self):
+        if self.idx - 1 >= 0:
+            self.idx -= 1
+            self.generate_bar_info()
+
+
+
+
+class ScoreCard(Widget):
+    def __init__(self, all_patterns, all_keys, note_detector)
+        super(ScoreCard, self).__init__()
 
 ###########################################################
 #                                                         #
