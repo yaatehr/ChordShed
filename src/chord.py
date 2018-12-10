@@ -64,7 +64,6 @@ class Chord(object):
         elif self.midiRep is not None:
             return self.midiRep
         midiRep = np.copy(ALL_CHORDS[self.quality][self.key_idx])
-        # print(self.octave)
         midiRep += 12*self.octave
         midiRep[:self.inversion] += 12 + self.keyOffset
         return sorted(midiRep)
@@ -80,7 +79,6 @@ class Key(object):
         baseChord = Chord(key=ALL_KEYS[tonic%12])
         tones = baseChord._getMidiTones()
         self.octaveOffset = (tones[0] - self.range[0])//12
-        print(self.octaveOffset)
 
 
     def generateChord(self, degree, octave=0, inversion=0):
