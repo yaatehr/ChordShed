@@ -226,6 +226,7 @@ class RootWidget(BaseWidget) :
 
         data = self.save_data.load_card_info(score_card)
         print(data)
+        self._initialize_controller()
 
         self.pattern, self.key = score_card.pattern, score_card.key
         self.switchScreen('score')
@@ -393,8 +394,6 @@ class ScoreViewer(Widget):
         self.canvas.add(Color(.3,.3,.3))
         crect = CRectangle(cpos=(Window.width//2, Window.height//2), csize=(Window.width,Window.height))
         self.canvas.add(crect)
-
-
         self.canvas.add(Color(1,1,1))
         self.card = CRectangle(cpos=(Window.width//2, Window.height//2), csize=(self.width//4, self.height//4))
         text = "No Info right now"
@@ -403,13 +402,32 @@ class ScoreViewer(Widget):
         self.card.texture = label.texture
         self.canvas.add(self.card)
 
+        self.gui = KeyboardGui()
+
+
         self.barNum = -1
 
         #self.score_dict = {}
         self.data = None
+        self.barData = None
 
+
+
+    def nextBar(self, increment=1):
+        self.barNum += increment
+        self.barNum = -1 if self.barNum < -1 else self.barNum
+        self.barNum = -1 if self.barNum > len(self.data.bar_data) - 1 else self.barNum
+        if self.barNum != -1:
+            self.barData = self.data.bar_data
+        else:
+            self.barData = None
+
+    # def display_bar(self):
+    #     if not self.barData:
+    #         self.
 
     def nextBeat(self):
+
         if self.data:
             self.barNum += 1
             # self.data.nextBeat()
@@ -424,9 +442,9 @@ class ScoreViewer(Widget):
     def on_key_down(self, keycode, modifiers):
         if keycode[1] == 'spacebar':
             if 'shift' in modifiers:
-                self.save_data.step(-1)
+                self.nextBar(-1)
             else:
-                self.save_data.step()
+                self.nextBar()
         
         if keycode[1] == 'r':
             self.barNum = -1
@@ -479,20 +497,22 @@ class SaveData(object):
         except Exception as a:
             print("SAVING DATA FAILED, see error below")
             print(a)
+        print(self.bar_data)
         return self.bar_data
 
     def add_bar_histogram(self, bar_data):
         for bar in bar_data:
             for key in bar.keys():
                 if key in self.histogram.keys():
-                    self.histogram[key] += bar_data[key]
+                    self.histogram[key] += bar[key]
                 else:
-                    self.histogram[key] = np.copy(bar_data[key])
+                    self.histogram[key] = np.copy(bar[key])
 
     def next_beat(self):
         if self.bar_data:
             if self.idx + 1 > len(self.pattern):
                 return self.bar_data[self.idx]
+
 
 
     def clear_card(self):

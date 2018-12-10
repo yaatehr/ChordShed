@@ -99,6 +99,14 @@ class KeyboardGui(InstructionGroup):
                 if note not in correct + incorrect:
                     self.keys[note%(12*self.numOctaves)].keyPress()
 
+
+    def previewNotes(self, notes, pattern):
+        [key.on_update(100) for key in self.keys] # timeout all the keys
+
+        for note in notes.key:
+            pass
+
+
     def initializeKeys(self):
         padding = 10
         blackKeys = []

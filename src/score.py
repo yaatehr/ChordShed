@@ -100,6 +100,7 @@ class BarData(object):
         self.noteMisses = dict()
         self.chordHits = dict()
         self.pattern = barPattern
+        self.barNum = index
         for degree, beat in barPattern:
             self.noteMisses[beat] = dict()
             self.chordHits[beat] = dict()
@@ -171,14 +172,17 @@ class BarData(object):
         missedKeys = set(noteMisses.keys())
         hitKeys = set(noteHits.keys())
         histogram = dict()
-        for key in missedKeys.intersection(hitKeys):
+        # print("%d beat %d "% (self.barNum, beat))
+        for key in missedKeys.union(hitKeys):
             entry = np.array([0,0])
             if key in missedKeys:
                 entry[1] = noteMisses[key]
             if key in hitKeys:
                 entry[0] = noteHits[key]
                 entry[1] += noteHits[key]
+            # print(entry)
             histogram[key] = entry
+        # print(histogram)
         return histogram 
 
     def getScore(self):
@@ -262,6 +266,7 @@ class DataPlayer(object):
         self.off_cmd = None
         self.playing = False
         self.callback = None
+        self.barData = None
 
     def start(self):
         if self.playing:
@@ -281,6 +286,9 @@ class DataPlayer(object):
         self.sched.remove(self.off_cmd)
         self.on_cmd = None
         self.off_cmd = None
+
+    # def set_bar(self, bar_data):
+    #     self.barData = bar_data
 
     def toggle(self):
         if self.playing:
