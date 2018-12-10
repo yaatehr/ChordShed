@@ -23,9 +23,13 @@ class Gem(InstructionGroup):
     def __init__(self, chord, cpos, radius, timeout_len, beat=1):
         super(Gem, self).__init__()
         
+        fp_png = '../images/' + chord.key.lower() + '-' + QUALITIES_FP[chord.quality] + '.png'
+        texture = Image(fp_png).texture
+
         # save initial position and create gem
         self.cpos = cpos
         self.gem = TimedCEllipse(cpos, radius)
+        self.gem.circ.texture = texture
         self.add(self.gem)
         
         # save chord
