@@ -119,8 +119,7 @@ class KeyboardGui(InstructionGroup):
         self.previewPattern = pattern
 
 
-    def preivew(self):
-
+    def preview(self):
         [key.on_update(100) for key in self.keys] # timeout all the keys
         if not self.previewNotes:
             self.index = 0
@@ -130,10 +129,12 @@ class KeyboardGui(InstructionGroup):
         for note in currentDict.keys():
             if note in self.previewPattern[self.index]:
                 num, denom = self.currentDict[note]
-                self.keys[x%(12*self.numOctaves)].keyPress(correct=True, manualPress=True)
+                self.keys[note%(12*self.numOctaves)].setKeyRgba(num, denom)
+                self.keys[note%(12*self.numOctaves)].keyPress(correct=True, manualPress=True)
             else:
                 num, denom = self.currentDict[note]
-                self.keys[x%(12*self.numOctaves)].keyPress(correct=False, manualPress=True)
+                self.keys[note%(12*self.numOctaves)].setKeyRgba(num, denom)
+                self.keys[note%(12*self.numOctaves)].keyPress(correct=False, manualPress=True)
         
         self.index += 1
         self.index%= len(self.previewNotes.keys())
