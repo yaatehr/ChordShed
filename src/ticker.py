@@ -6,6 +6,7 @@ sys.path.append('..')
 from src.chord import Chord, Key
 from kivy.core.window import Window
 kTicksPerQuarter = 480
+import numpy as np
 
 
 def ticks_to_time(ticks, bpm):
@@ -112,6 +113,13 @@ class Ticker(object):
             # print('nextStatus')
             return "next"
 
+    def bars_remaining(self):
+        tick = self.getTick()
+        ticksEllapsed = (tick - self.bar_tick)%(self.barLenTicks*4)
+        barNum = (self.numRepeats*self.barLenTicks - ticksEllapsed)//self.barLenTicks
+        barsRemaining = np.clip(self.numRepeats - barNum - 1, self.numRepeats, 0)
+        return barsRemaining
+
 
     def _initialize_bars(self, pattern, key):
         gem_bars = []
@@ -185,7 +193,7 @@ class Ticker(object):
         for gem in self.active_gems:
             allHit = allHit and gem.hit
         if allHit:
-            self.increment_bar()
+            self.increment_bar(perfect=allHit)
             print('increment bar')
         else:
             # print("measure over, resetting gems - %f" % self.getRelativeTick())

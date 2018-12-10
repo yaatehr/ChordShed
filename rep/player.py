@@ -48,8 +48,11 @@ class Player(InstructionGroup):
         # self.clock.stop()
         self.play = False
 
-    def increment_bar(self):
-        if self.objects.size(): #clear last bar
+    def increment_bar(self, perfect=False):
+        if self.objects.size(): #wrap up last bar
+            if perfect:
+                self.scoreCard.perfect_bar(self.barNum, self.ticker.bars_remaining())
+            self.scoreCard.increment_score(self.barNum)
             self.ticker.clear_bar(self.barNum)
             [self.objects.remove(gem) for gem in self.ticker.active_gems]
             

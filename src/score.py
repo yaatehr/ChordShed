@@ -56,32 +56,37 @@ class ScoreCard(object):
         self.total_accuracy = sum([bar.getScore() for bar in self.bars])/max_score
         # self.idx = 0
         self.score = 0
+        self.barScore = 0
         self.name = name
 
+    def increment_score(self, barIndex):
+        self.score += self.barScore
+        self.barScore = 0
 
     def on_chord_miss(self, barIndex, gem, notes=None):
         print('scorecard miss')
         self.bars[barIndex].addChordMiss(gem, notes)
+        self.barScore = self.bars[barIndex].getScore()
 
     def on_chord_hit(self, barIndex, gem, notes):
         print('scorecard hit')
-
         self.bars[barIndex].addChordHit(gem, notes=notes)
+        self.barScore = self.bars[barIndex].getScore()
 
     def on_misc_miss(self, barIndex, note):
         print('misc scorehard miss')
-
         self.bars[barIndex].addMiscMiss(note)
+        self.barScore = self.bars[barIndex].getScore()
 
     def perfect_bar(self, barIndex, responsesRemaining):
         print('scorehard perfect')
-
         self.bars[barIndex].addPerfectBar(responsesRemaining) 
+        self.barScore = self.bars[barIndex].getScore()
 
     def setScore(self, score):
         self.score = score
     def getScore(self):
-        return self.score
+        return self.score + self.barScore
     
     def gemToString(self, key):
         val = self.gemHits[key]

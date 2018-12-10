@@ -128,7 +128,8 @@ class MainWidget(BaseWidget) :
         if not self.parent._has_midi_input():
             self.info.text = "No Keyboard Connected"
         else:
-            self.info.text = ""
+            if self.player.scoreCard:
+                self.info.text = "Score: %d" % self.player.scoreCard.getScore()
         
 
 
