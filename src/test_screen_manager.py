@@ -100,7 +100,7 @@ class RootWidget(BaseWidget) :
         self.pattern = None
         self.key = None
 
-        self.saved_data = ScoreViewer(self.pattern, self.key)
+        #self.saved_data = ScoreViewer(self.pattern, self.key)
     
 
     def switchScreen(self, screenName, **kwargs):
@@ -210,8 +210,8 @@ class RootWidget(BaseWidget) :
             except:
                 pass
 
-
-    def retrieve_score_card(self, score_card):
+    """
+    def retrieve_score_card(self, score_card, pattern=self.pattern):
         '''
         This is a callback from Player to RootWidget to get the score card from the most recent game
         Should update the SavedData class in RootWidget
@@ -221,7 +221,7 @@ class RootWidget(BaseWidget) :
         self.score_card = score_card
         data = self.saved_data.load_save_data(self.pattern, self.key)
         self.switchScreen('score')
-
+    """
 
     def _initialize_controller(self):
         self.note_detector.reset(hard=True)
@@ -380,6 +380,8 @@ class ScoreViewer(Widget):
 
         self.score_dict = {}
         self.data = None
+
+
 
     def nextBeat(self):
         if self.data:
