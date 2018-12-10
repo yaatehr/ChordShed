@@ -43,6 +43,7 @@ else:
     fp = '../test/testpattern.txt'
 
 patterns = patternReader(fp)
+p = patternReader('../test/testpattern2.txt')
 
 defaultKey = Key()
 

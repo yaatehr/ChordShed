@@ -30,7 +30,7 @@ from src.buttonwidget import *
 from src.crectangle import *
 
 from test.main import MainWidget as Game
-from test.main import patterns
+from test.main import patterns, p
 from src.chord import Key
 
 
@@ -250,7 +250,7 @@ class HomeScreen(Widget):
 
         # Load patterns information and create dropdown
         self.patterns_dict = {'Pattern 1': patterns, 
-                              'Pattern 2': patterns, 
+                              'Pattern 2': p, 
                               'Pattern 3': patterns}
         self.pattern = None
         # Create dropdown for patterns
@@ -432,7 +432,7 @@ class PianoCalibrator(Widget):
 
 
 
-
+'''
 class SavedGameData(object):
     def __init__(self, pattern, scores, notes):
         self.pattern = pattern # array of array of tuples in format (roman numeral, beat)
@@ -482,7 +482,7 @@ class ScoreCard(Widget):
 ###########################################################
 
 
-'''
+
 class Game(Widget):
     def __init__(self):
         super(Game, self).__init__( size=(Window.width, Window.height) )
