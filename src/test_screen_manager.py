@@ -104,7 +104,7 @@ class RootWidget(BaseWidget) :
         self.pattern = None
         self.key = None
 
-        self.saved_data = SaveData()
+        self.saved_data = ScoreViewer(self.pattern, self.key)
     
 
     def switchScreen(self, screenName, **kwargs):
@@ -153,10 +153,6 @@ class RootWidget(BaseWidget) :
                 return ScoreViewer( pattern=kwargs['pattern']\
                     , key=kwargs['key'])
 
-                    , mixer=self.mixer\
-                    , callback=retrieve_score_card)
-
-            
         elif screenName == 'score' and self.score_card:
             return ScoreCard(self.score_card)
         elif screenName == 'home':
@@ -169,6 +165,7 @@ class RootWidget(BaseWidget) :
         elif screenName == 'calibrate':
             print()
             return PianoCalibrator()
+        
         print('No screen named:', screenName)
         return self.home
 
@@ -226,7 +223,7 @@ class RootWidget(BaseWidget) :
         '''
         print("retrieving score card from player class")
         self.score_card = score_card
-        data = self.save_data.load_card_info(score_card)
+        data = self.saved_data.load_save_data(self.pattern, self.key)
         self.switchScreen('score')
 
 
@@ -371,7 +368,7 @@ class ScoreViewer(Widget):
     '''
     Dummy widget for testing basic score card functionality
     '''
-    def __init__(self, pattern, key):
+    def __init__(self, pattern=None, key=None):
         super(ScoreViewer, self).__init__(size=(Window.width, Window.height))
 
         self.info = topleft_label()
@@ -379,20 +376,22 @@ class ScoreViewer(Widget):
         self.info.text = 'Press SPACE to shift through bars'
         self.dataPlayer = DataPlayer(callback = self.nextBeat)
 
+        self.pattern = pattern 
+        self.key = key
+
         crect = CRectangle(cpos=(Window.width//2, Window.height//2), csize=(Window.width,Window.height))
         self.canvas.add(crect)
 
         self.barNum = -1
 
         self.score_dict = {}
+        self.data = None
 
     def nextBeat(self):
         if self.data:
-            pass
+            self.barNum += 1
             # self.data.nextBeat()
     
-
-
     def load_save_data(self, pattern, key):
         self.data = SaveData(pattern, key)
 
@@ -409,6 +408,7 @@ class ScoreViewer(Widget):
 
         if keycode[1] == 'left':
             self.barNum -= 1
+
         if keycode[1] == 'right':
             self.barNum += 1
 
@@ -431,9 +431,9 @@ class ScoreViewer(Widget):
 
 class SaveData(object):
     def __init__(self, pattern, key):
-        super(SaveData, self).__init__(size=(Window.width, Window.height))
         self.card = None
         self.bar_data = []
+        self.idx = 0
 
 
     def load_card_info(self, card):
@@ -444,7 +444,14 @@ class SaveData(object):
         return self.bar_data
 
 
+    def next_beat(self):
+        if self.bar_data:
+            if self.idx + 1 > len(pattern):
+                return self.bar_data[self.idx]
+
+
     def clear_card(self):
+        self.idx = 0
         self.card = None
         self.bar_data = []
 
