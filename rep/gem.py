@@ -20,11 +20,14 @@ Gem Representation using a TimedCEllipse
 - can be used with a 
 '''
 class Gem(InstructionGroup):
+
     def __init__(self, chord, cpos, radius, timeout_len, beat=1):
         super(Gem, self).__init__()
         
         # save initial position and create gem
         self.cpos = cpos
+        self.radius = radius
+        self.oRadius = int(radius)
         self.gem = TimedCEllipse(cpos, radius)
         self.add(self.gem)
         
@@ -39,39 +42,51 @@ class Gem(InstructionGroup):
         self.standby = True
         self.active = True
         self.hit = False
+        self.focused = False
         self.miss = False
         self.t = 10
         
         # draw on the canvas
         self.on_update(0)
-        
-        
+
+
+    def copy_gem(self):
+        return Gem(self.chord, self.cpos, self.radius, self.timeout_len, self.beat)
+
+
     def set_radius(self, r):
         '''set size of the gem'''
+        self.radius = r
         self.gem.set_radius(r)
     
     
     def on_hit(self):
         '''Change the color of the ring to green'''
         if not self.miss:
+            self.gem.set_radius(self.oRadius)
             self.gem.set_angle(721)
             self.gem.set_ring_color(kGemRingHit)
             self.hit = True
+            self.focused = False
             self.standby = False
     
+
     def on_miss(self):
         '''Change the color of the ring to red'''
         if not self.hit:
+            self.gem.set_radius(self.oRadius)
             self.gem.set_angle(721)
             self.gem.set_ring_color(kGemRingMiss)
             self.miss = True
             self.standby = False
+            self.focused = False
             print('missed')
     
     
-    def wiggle(self):
+    def focus(self):
         '''Animate by wiggling if an attempted input is incorrect'''
-        pass
+        self.set_radius(self.oRadius*1.2)
+        self.focused = True
     
     
     def get_chord(self):
@@ -79,16 +94,19 @@ class Gem(InstructionGroup):
     
     
     def on_reset(self):
+        self.gem.set_radius(self.oRadius)
         self.gem.set_ring_color(kGemRingColor)
         self.gem.set_angle(761)
         self.standby = True
         self.hit = False
         self.miss = False
+        self.focused = False
         self.active = True
         self.gem.set_cpos(self.cpos)
         self.on_update(0)
         print('gem reset')
         
+
     def activate(self):
         self.gem.set_angle(0)
         self.active = True
@@ -102,10 +120,12 @@ class Gem(InstructionGroup):
             self.standby = False
         return timeout
     
+
     def set_pos(self, cpos):
         self.cpos = cpos
         self.gem.cpos = cpos
     
+
     def exit(self):
         '''Indicator to animate off of the screen'''
         self.active = False
