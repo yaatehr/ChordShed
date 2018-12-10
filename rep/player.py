@@ -11,13 +11,14 @@ import copy
 
 
 class Player(InstructionGroup):
-    def __init__(self, ticker, clock, pattern, targetCallback = None, pull_gems=None):
+    def __init__(self, ticker, clock, pattern, targetCallback = None, pull_gems=None, scoreCallback=None):
         super(Player, self).__init__()
         self.score = 0
         self.play = False
         self.scoreCard = None
         self.pattern = pattern
         self.update_target = targetCallback
+        self.update_root_score = scoreCallback # for when this is done
         self.mode = "call"
         self.ticker = ticker
         self.clock = clock

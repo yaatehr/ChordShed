@@ -102,6 +102,8 @@ class RootWidget(BaseWidget) :
         self.switchScreen('home')
         self.pattern = None
         self.key = None
+
+        self.saved_data = SaveData()
     
 
     def switchScreen(self, screenName, **kwargs):
@@ -144,11 +146,12 @@ class RootWidget(BaseWidget) :
                 return Game( masterPattern=kwargs['pattern']\
                     , key=kwargs['key']\
                     , noteDetector=self.note_detector\
-                    , mixer=self.mixer)
+                    , mixer=self.mixer\
+                    , callback=retrieve_score_card)
 
             
-        elif screenName == 'score':
-            return ScoreCard()
+        elif screenName == 'score' and self.score_card:
+            return ScoreCard(self.score_card)
         elif screenName == 'home':
             self.home._generate_keys()
             return self.home
@@ -204,6 +207,18 @@ class RootWidget(BaseWidget) :
                 child.on_update()
             except:
                 pass
+
+
+    def retrieve_score_card(self, score_card):
+        '''
+        This is a callback from Player to RootWidget to get the score card from the most recent game
+        Should update the SavedData class in RootWidget
+        Returns None
+        '''
+        print("retrieving score card from player class")
+        self.score_card = score_card
+        data = self.save_data.load_card_info(score_card)
+        self.switchScreen('score')
 
 
     def _initialize_controller(self):
@@ -343,38 +358,24 @@ class HomeScreen(Widget):
         
 
 
-class ScoreCard(Widget):
-    '''
-    Dummy widget for testing basic score card functionality
-    '''
+class SaveData(object):
     def __init__(self):
-        super(ScoreCard, self).__init__(size=(Window.width, Window.height))
-
-        self.info = topleft_label()
-        self.add_widget(self.info)
-        self.info.text = 'Placeholder'
-
-        crect = CRectangle(cpos=(Window.width//2, Window.height//2), csize=(50,50))
-        self.canvas.add(crect)
-
-        self.score_dict = {}
+        super(SaveData, self).__init__(size=(Window.width, Window.height))
+        self.card = None
+        self.bar_data = []
 
 
-    def load_score_card(self, pattern, key):
-        pass
+    def load_card_info(self, card):
+        self.card = card
+        for bar in self.card.bars:
+            bar_data = [bar.getHistogram(b[1]) for b in bar]
+            self.bar_data.append( bar_data )
+        return self.bar_data
 
 
-    def on_key_down(self, keycode, modifiers):
-        print("No method for this input in W")
-
-
-    def on_update(self):
-        pass
-
-
-    def __str__(self):
-        return "ScoreCard"
-
+    def clear_card(self):
+        self.card = None
+        self.bar_data = []
 
 
 
