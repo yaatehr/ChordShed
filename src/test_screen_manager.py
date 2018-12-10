@@ -419,15 +419,18 @@ class ScoreViewer(Widget):
             return False
 
 
-
     def on_update(self):
         pass
 
 
     def __str__(self):
         return "ScoreViewer"
+
+
+
+
 class SaveData(object):
-    def __init__(self):
+    def __init__(self, pattern, key):
         super(SaveData, self).__init__(size=(Window.width, Window.height))
         self.card = None
         self.bar_data = []
