@@ -42,6 +42,7 @@ class NoteDetector(object):
         self.onInput = player.on_input
 
     def callback(self, message):
+        print(message)
         if message.type == 'note_off':
             if message.note in self.playingNotes.keys():
                 start = self.playingNotes.pop(message.note)

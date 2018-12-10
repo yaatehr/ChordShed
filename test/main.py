@@ -51,7 +51,7 @@ class MainWidget(BaseWidget) :
     playing = False
     info = topleft_label()
 
-    def __init__(self, masterPattern=patterns, key=defaultKey, fileName='testoutput.txt', noteDetector=None, mixer=None, callback=None):
+    def __init__(self, masterPattern=None, key=None, fileName='testoutput.txt', noteDetector=None, mixer=None, callback=None):
         super(MainWidget, self).__init__()
         '''
         The main game instance, the pattern and keys are loaded before the screen is initialized
@@ -110,6 +110,8 @@ class MainWidget(BaseWidget) :
         self.playing = False
     
     def on_update(self) :
+        if not self.parent:
+            return
         if self.playing:
             self.player.on_update()
         self.gui.on_update()
@@ -117,7 +119,9 @@ class MainWidget(BaseWidget) :
 
         if not self.parent._has_midi_input():
             self.info.text = "No Keyboard Connected"
-
+        else:
+            self.info.text = ""
+        
 
 
         # update personal clock

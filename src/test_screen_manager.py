@@ -1,11 +1,4 @@
-# from kivy.app import App
-# from os.path import dirname, join
-# from kivy.lang import Builder
-# from kivy.properties import NumericProperty, StringProperty, BooleanProperty,\
-#     ListProperty
-# from kivy.clock import Clock
-# from kivy.animation import Animation
-# from kivy.uix.screenmanager import Screen, ScreenManager
+
 
 import sys
 sys.path.append('..')
@@ -33,16 +26,11 @@ from kivy.graphics import PushMatrix, PopMatrix, Translate, Scale, Rotate
 from src.pianotutor import KeyboardGui
 from src.notedetector import NoteDetector
 
-#from test.main import MainWidget as GameScreen
-
-#from src.score import ScoreScreen
-
-#from rep.gem import *
-
 from src.buttonwidget import *
 from src.crectangle import *
 
 from test.main import MainWidget as Game
+from test.main import patterns, defaultKey
 
 
 
@@ -103,33 +91,36 @@ class RootWidget(BaseWidget) :
         # save state and initialize home screen
         self.widget = None
         self.switchScreen('home')
+        self.pattern = None
+        self.key = None
+    
 
-    def switchScreen(self, screenName):
+    def switchScreen(self, screenName, **kwargs):
         '''
         Change screen to specified widget
         Return: None
         '''
-        new_widget = self.generateWidget(screenName)
+        self._initialize_controller()
+        new_widget = self.generateWidget(screenName, **kwargs)
         
-        if self.info in self.children:
+        if self.info in self.children and self.calibrate in self.children:
             self.remove_widget(self.info)
+            self.remove_widget(self.calibrate)
 
         if self.widget:
             self.remove_widget(self.widget)
-            '''
-            if isinstance(self.widget, Game):
-                self.widget.audio.close() # this crashes
-            '''
+            del self.widget
             self.widget = None
         
         if new_widget:
             if isinstance(new_widget, HomeScreen):
                 self.add_widget(self.info)
+                self.add_widget(self.calibrate)
             self.widget = new_widget
             self.add_widget(self.widget, index=len(self.children)+1)
 
 
-    def generateWidget(self, screenName):
+    def generateWidget(self, screenName, **kwargs):
         '''
         Fetch and return instance of the widget that is to be dislayed
         Returns: Widget() or None
@@ -137,7 +128,14 @@ class RootWidget(BaseWidget) :
         if screenName == 'game':
             if not self._has_midi_input():
                 return self.home
-            return Game(noteDetector=self.noteDetector, mixer=self.mixer)
+            if 'pattern' in kwargs and 'key' in kwargs:
+                print(kwargs['pattern'])
+                return Game( masterPattern=kwargs['pattern']\
+                    , key=kwargs['key']\
+                    , noteDetector=self.note_detector\
+                    , mixer=self.mixer)
+
+            
         elif screenName == 'score':
             return ScoreCard()
         elif screenName == 'home':
@@ -162,7 +160,6 @@ class RootWidget(BaseWidget) :
                     self.switchScreen('home')
             except:
                 pass
-        
         else: # otherwise run the root controls
             print('Program not active')
 
@@ -198,14 +195,16 @@ class RootWidget(BaseWidget) :
 
     def _initialize_controller(self):
         if self._has_midi_input():
+            print('has midi input')
             return True
         inport = None
         try: 
-            inport = mido.open_input(virtual=False, callback=self.detector.callback)
+            inport = mido.open_input(virtual=False, callback=self.note_detector.callback)
             print('port initialized')
         except Exception as e:
-            return False
             print('no input attached ', e)
+            return False
+
         self.midiInput = inport
         return True
     
@@ -244,22 +243,22 @@ class HomeScreen(Widget):
         
 
         # Load patterns information and create dropdown
-        self.pattern_text = ['Pattern 1', 'Pattern 2', 'Pattern 3']
-        self.patterns = [1, 2, 3]
+        self.patterns_dict = {'Pattern 1': patterns, 'Pattern 2': patterns, 'Pattern 3': patterns}
         self.pattern = None
         # Create dropdown for patterns
         ddp_anchor = (Window.width//4 - buttonSize[0]//2, buttonAnchor[1])
-        self.mb_p, self.dd_p = create_dropdown(['Select Pattern'] + self.pattern_text, *buttonSize, ddp_anchor)
+        self.mb_p, self.dd_p = create_dropdown(['Select Pattern'] + list(self.patterns_dict), *buttonSize, ddp_anchor)
         self.add_widget(self.mb_p)
         self.dd_p.bind(on_select=self.set_pattern)
 
         # Load keys information and create dropdown
-        self.key_text = ['C', 'D', 'E']
-        self.keys = ['CMaj', 'DMaj', 'Emaj']
+        self.keys_dict = {'A Major': defaultKey, 'A#/Bb Major': defaultKey, 'B Major': defaultKey, 'C Major': defaultKey, 'C#/Db Major': defaultKey, 'D Major': defaultKey, 'D#/Eb Major': defaultKey, 'E Major': defaultKey, 'F Major': defaultKey, 'F#/Gb Major': defaultKey, 'G Major': defaultKey, 'G#/Ab Major': defaultKey,
+                          'A Minor': defaultKey, 'A#/Bb Minor': defaultKey, 'B Minor': defaultKey, 'C Minor': defaultKey, 'C#/Db Minor': defaultKey, 'D Minor': defaultKey, 'D#/Eb Minor': defaultKey, 'E Minor': defaultKey, 'F Minor': defaultKey, 'F#/Gb Minor': defaultKey, 'G Minor': defaultKey, 'G#/Ab Minor': defaultKey}
+        
         self.key = None
         # Create dropdown for keys
         ddk_anchor = (ddp_anchor[0], ddp_anchor[1] - buttonSize[1])
-        self.mb_k, self.dd_k = create_dropdown(['Select Key'] + self.key_text, *buttonSize, ddk_anchor)
+        self.mb_k, self.dd_k = create_dropdown(['Select Key'] + list(self.keys_dict), *buttonSize, ddk_anchor)
         self.add_widget(self.mb_k)
         self.dd_k.bind(on_select=self.set_key)
 
@@ -267,24 +266,21 @@ class HomeScreen(Widget):
 
 
     def set_pattern(self, obj, txt):
-        idx = self.pattern_text.index(txt)
-        self.pattern = self.patterns[idx]
+        self.pattern = self.patterns_dict[txt]
         print("Pattern changed to:", self.pattern)
-        if self.key: # if a key has already been selected
-            pass # TODO: Set the key of the pattern that has been loaded
 
 
     def set_key(self, obj, txt):
-        idx = self.key_text.index(txt)
-        self.key = self.keys[idx]
+        self.key = self.keys_dict[txt]
         print("Key changed to:", self.key)
-        if self.pattern: # if a pattern has already been accepted
-            pass # TODO: Set the key of the pattern that has been loaded
 
 
     def switch_to_game_screen(self, button):
         '''Callback to switch to game screen'''
-        self.parent.switchScreen('game')
+        if self.pattern and self.key:
+            self.parent.switchScreen('game', pattern=self.pattern, key=self.key)
+        else:
+            print('Please select a pattern and a key signature')
 
 
     def switch_to_score_card(self, button):
@@ -292,41 +288,6 @@ class HomeScreen(Widget):
         print('running')
         self.parent.switchScreen('score')
 
-
-
-
-'''
-class Game(Widget):
-    def __init__(self):
-        super(Game, self).__init__( size=(Window.width, Window.height) )
-
-        self.color = Color(.1,.2,.3)
-        self.canvas.add(self.color)
-        self.bg = Rectangle(pos=self.pos, size=self.size)
-        self.canvas.add(self.bg)
-
-        self.gem = Gem('t', (Window.width//2, Window.height//2), 50, 5)
-        self.canvas.add(self.gem)
-
-
-    def on_key_down(self, keycode, modifiers):
-        if keycode[1] == '2':
-            self.gem.activate()
-        if keycode[1] == '4':
-            self.gem.on_hit()
-
-
-    def on_reset(self):
-        self.gem.on_reset()
-
-
-    def on_update(self):
-        self.gem.on_update( kivyClock.frametime )
-
-    
-    def __str__(self):
-        return "Game"
-'''
 
 
 
@@ -401,7 +362,7 @@ class PianoCalibrator(Widget):
 
         self.canvas.add(Color(.3,.3,.3))
         self.canvas.add(bg)
-        self.gui = KeyboardGui(self.parent.detector)
+        self.gui = KeyboardGui(self.parent.note_detector)
         self.canvas.add(self.gui)
         self.calibration_step = 0
 
@@ -431,7 +392,38 @@ class PianoCalibrator(Widget):
 ###########################################################
 
 
+'''
+class Game(Widget):
+    def __init__(self):
+        super(Game, self).__init__( size=(Window.width, Window.height) )
 
+        self.color = Color(.1,.2,.3)
+        self.canvas.add(self.color)
+        self.bg = Rectangle(pos=self.pos, size=self.size)
+        self.canvas.add(self.bg)
+
+        self.gem = Gem('t', (Window.width//2, Window.height//2), 50, 5)
+        self.canvas.add(self.gem)
+
+
+    def on_key_down(self, keycode, modifiers):
+        if keycode[1] == '2':
+            self.gem.activate()
+        if keycode[1] == '4':
+            self.gem.on_hit()
+
+
+    def on_reset(self):
+        self.gem.on_reset()
+
+
+    def on_update(self):
+        self.gem.on_update( kivyClock.frametime )
+
+    
+    def __str__(self):
+        return "Game"
+'''
 
 
 run(RootWidget)
