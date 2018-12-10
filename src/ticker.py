@@ -116,8 +116,8 @@ class Ticker(object):
     def bars_remaining(self):
         tick = self.getTick()
         ticksEllapsed = (tick - self.bar_tick)%(self.barLenTicks*4)
-        barNum = (self.numRepeats*self.barLenTicks - ticksEllapsed)//self.barLenTicks
-        barsRemaining = np.clip(self.numRepeats - barNum - 1, self.numRepeats, 0)
+        barNum = round((self.numRepeats*self.barLenTicks - ticksEllapsed)/self.barLenTicks)
+        barsRemaining = np.clip(self.numRepeats - barNum - 1, 0, self.numRepeats-1)
         return barsRemaining
 
 
@@ -192,7 +192,7 @@ class Ticker(object):
         allHit = True
         for gem in self.active_gems:
             allHit = allHit and gem.hit
-        if allHit:
+        if allHit and not self.on_update() == "call":
             self.increment_bar(perfect=allHit)
             print('increment bar')
         else:
