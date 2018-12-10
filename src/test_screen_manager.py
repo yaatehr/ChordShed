@@ -542,13 +542,13 @@ class SavedGameData(object):
     def generate_next_bar(self):
         if self.idx + 1 < len(self.pattern):
             self.idx += 1
-            self.generate_bar_info()
+            return self.generate_bar_info()
 
 
     def generate_previous_bar(self):
         if self.idx - 1 >= 0:
             self.idx -= 1
-            self.generate_bar_info()
+            return self.generate_bar_info()
 
 
 

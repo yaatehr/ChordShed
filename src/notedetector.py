@@ -74,12 +74,13 @@ class NoteDetector(object):
                     vel = message.velocity if message.velocity else np.clip(message.value, 0 ,100)
                 except Exception as a:
                     vel = np.clip(message.value, 0 ,100)
-                    print(message)
-                    print("failed to recognize")
+                    # print(message)
+                    # print("failed to recognize")
                 self.synth.noteon(0, message.note, vel)
                 if self.targetChord and self.checkForChords():
+                    notes = self.playingNotes.keys()
                     if self.onHit:
-                        return self.onHit()
+                        return self.onHit(list(notes))
                 elif self.onInput:
                     return self.onInput(message.note, correctNote)
     
@@ -95,8 +96,8 @@ class NoteDetector(object):
         return correctNotes, incorrectNotes
 
     def checkForChords(self):
-        notes = list(self.playingNotes.values())
-        if len(notes) < 3:
+        noteHits = list(self.playingNotes.values())
+        if len(noteHits) < 3:
             return False
         if self.targetChord:
-            return all(notes)
+            return all(noteHits)
