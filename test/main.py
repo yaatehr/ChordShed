@@ -38,11 +38,19 @@ import bisect
 run_main_widget = False # uncomment if this module is being run NOT within the test/ directory
 
 if run_main_widget:
-    fp = './testpattern.txt'
+    fp1 = './testpattern.txt'
+    fp2 = './testpattern2.txt'
+    fp3 = './testpattern3.txt'
 else: 
-    fp = '../test/testpattern.txt'
+    fp1 = '../test/testpattern.txt'
+    fp2 = '../test/testpattern2.txt'
+    fp3 = '../test/testpattern3.txt'
 
-patterns = patternReader(fp)
+pattern1 = patternReader(fp1)
+pattern2 = patternReader(fp2)
+pattern3 = patternReader(fp3)
+
+patterns = (pattern1, pattern2, pattern3)
 
 defaultKey = Key()
 
