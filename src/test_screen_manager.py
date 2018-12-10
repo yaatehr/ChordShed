@@ -31,7 +31,7 @@ from src.crectangle import *
 
 from test.main import MainWidget as Game
 
-from test.main import patterns, p
+from test.main import pattern1, pattern2
 from src.chord import Key
 
 from test.main import patterns
@@ -263,9 +263,9 @@ class HomeScreen(Widget):
         
 
         # Load patterns information and create dropdown
-        self.patterns_dict = {'Pattern 1': patterns, 
-                              'Pattern 2: ?-V-I': p, 
-                              'Pattern 3': patterns}
+        self.patterns_dict = {'Patt. 1: Parallels': patterns[0], 
+                              'Patt. 2: V - I': patterns[1], 
+                              'Patt. 3: Short Song': patterns[2]}
         self.pattern = None
         # Create dropdown for patterns
         ddp_anchor = (Window.width//4 - buttonSize[0]//2, buttonAnchor[1])
