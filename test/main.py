@@ -86,7 +86,7 @@ class MainWidget(BaseWidget) :
         self.detector = noteDetector
         self.ticker = Ticker(self.pattern, key, self.clock)
         self.mixer.add(self.ticker.synth)
-        self.player = Player(self.ticker, self.clock, self.pattern, noteDetector.updateTargetChord, noteDetector.getActiveNotes)
+        self.player = Player(self.ticker, self.clock, self.pattern, noteDetector.updateTargetChord, noteDetector.getActiveNotes, scoreCallback=callback)
         self.ticker.initialize_callbacks(self.player.increment_bar, self.player.catch_passes)
         self.detector.initializePlayer(self.player)
         self.canvas.add(self.player)
@@ -98,23 +98,20 @@ class MainWidget(BaseWidget) :
 
     
     def on_key_down(self, keycode, modifiers):
-        if keycode[1] == 't':
-            self.player.load_pattern(Test_Pattern)
-            print('loading stuff')
-            
-        elif keycode[1] == 'p':
+        if keycode[1] == 'p':
             self.pause_game()
             
         elif keycode[1] == 'o':
             self.play_game()
 
+        '''
         elif keycode[1] == 'c' and self.midiInput is None:
             self.initialize_controller()
             # self.playerSynth.start()
 
         # else:
         #     self.player.on_input(keycode[1])
-        
+        '''
 
     def play_game(self):
         self.clock.start()

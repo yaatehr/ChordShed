@@ -103,6 +103,8 @@ class RootWidget(BaseWidget) :
         self.switchScreen('home')
         self.pattern = None
         self.key = None
+
+        self.saved_data = SaveData()
     
 
     def switchScreen(self, screenName, **kwargs):
@@ -151,6 +153,12 @@ class RootWidget(BaseWidget) :
                 return ScoreViewer( pattern=kwargs['pattern']\
                     , key=kwargs['key'])
 
+                    , mixer=self.mixer\
+                    , callback=retrieve_score_card)
+
+            
+        elif screenName == 'score' and self.score_card:
+            return ScoreCard(self.score_card)
         elif screenName == 'home':
             self.home._generate_keys()
             return self.home
@@ -208,6 +216,18 @@ class RootWidget(BaseWidget) :
                 child.on_update()
             except:
                 pass
+
+
+    def retrieve_score_card(self, score_card):
+        '''
+        This is a callback from Player to RootWidget to get the score card from the most recent game
+        Should update the SavedData class in RootWidget
+        Returns None
+        '''
+        print("retrieving score card from player class")
+        self.score_card = score_card
+        data = self.save_data.load_card_info(score_card)
+        self.switchScreen('score')
 
 
     def _initialize_controller(self):
@@ -406,7 +426,24 @@ class ScoreViewer(Widget):
 
     def __str__(self):
         return "ScoreViewer"
+class SaveData(object):
+    def __init__(self):
+        super(SaveData, self).__init__(size=(Window.width, Window.height))
+        self.card = None
+        self.bar_data = []
 
+
+    def load_card_info(self, card):
+        self.card = card
+        for bar in self.card.bars:
+            bar_data = [bar.getHistogram(b[1]) for b in bar]
+            self.bar_data.append( bar_data )
+        return self.bar_data
+
+
+    def clear_card(self):
+        self.card = None
+        self.bar_data = []
 
 
 
