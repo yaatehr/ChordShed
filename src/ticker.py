@@ -36,7 +36,7 @@ class Ticker(object):
     def __init__(self, songPattern, key, clock):
         self.slack_timout = beats_to_time(.5, self.bpm)
         self.gems, self.bars = self._initialize_bars(songPattern, key)
-        self.synth = Synth('../data/FluidR3_GM.sf2')
+        self.synth = Synth('../bank/FluidR3_GM.sf2')
         totalBeats = self.measuresPerCall*self.numRepeats*len(self.bars)*4
         totalTime = beats_to_time(totalBeats, self.bpm)
         totalOffsetTicks = self.endBarTicks*totalBeats/4

@@ -11,11 +11,12 @@ import copy
 
 
 class Player(InstructionGroup):
-    def __init__(self, ticker, clock, pattern, targetCallback = None, pull_gems=None, scoreCallback=None):
+    def __init__(self, ticker, clock, pattern, key,targetCallback = None, pull_gems=None, scoreCallback=None):
         super(Player, self).__init__()
         self.play = False
         self.scoreCard = None
         self.pattern = pattern
+        self.key = key
         self.update_target = targetCallback
         self.update_root_score = scoreCallback # for when this is done
         self.ticker = ticker
@@ -38,7 +39,7 @@ class Player(InstructionGroup):
     def play_game(self):
         self.play = True
         if not self.scoreCard:
-            self.scoreCard = ScoreCard(self.pattern)
+            self.scoreCard = ScoreCard(self.pattern, self.key)
             # self.scoreCard.clear()
         if self.barNum == -1:
             self.status = "next"

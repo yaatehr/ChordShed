@@ -32,10 +32,6 @@ from src.score import *
 
 from test.main import MainWidget as Game
 
-from test.main import pattern1, pattern2
-from src.chord import Key
-
-from test.main import patterns
 from src.chord import Key, Chord
 
 
@@ -79,7 +75,7 @@ class RootWidget(BaseWidget) :
     key_range = [48, 72]
     midiInput = None
     mixer = Mixer()
-    playerSynth = Synth('../data/FluidR3_GM.sf2')
+    playerSynth = Synth('../bank/FluidR3_GM.sf2')
     def __init__(self):
         super(RootWidget, self).__init__()
         # config
@@ -284,9 +280,7 @@ class HomeScreen(Widget):
         
 
         # Load patterns information and create dropdown
-        self.patterns_dict = {'Patt. 1: Parallels': patterns[0], 
-                              'Patt. 2: V - I': patterns[1], 
-                              'Patt. 3: Short Song': patterns[2]}
+        self.patterns_dict = loadPatterns()
         self.pattern = None
         # Create dropdown for patterns
         ddp_anchor = (Window.width//4 - buttonSize[0]//2, buttonAnchor[1])
@@ -393,7 +387,8 @@ class ScoreViewer(Widget):
             # self.data.nextBeat()
     
     def load_save_data(self, pattern, key):
-        self.data = SaveData(pattern, key)
+        # self.data = SaveData(pattern, key)
+        pass
 
 
     def on_key_down(self, keycode, modifiers):
@@ -436,13 +431,12 @@ class SaveData(object):
         self.idx = 0
 
 
-    def load_card_info(self, card):
-        self.card = card
-        for bar in self.card.bars:
-            bar_data = [bar.getHistogram(b[1]) for b in bar]
-            self.bar_data.append( bar_data )
-        return self.bar_data
-
+#     def load_card_info(self, card):
+#         self.card = card
+#         for bar in self.card.bars:
+#             bar_data = [bar.getHistogram(b[1]) for b in bar]
+#             self.bar_data.append( bar_data )
+#         return self.bar_data
 
     def next_beat(self):
         if self.bar_data:

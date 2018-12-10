@@ -196,7 +196,7 @@ class MainWidget(BaseWidget) :
         self.objects = AnimGroup()
                 #Audio Setup
         self.audio = Audio(2)
-        self.synth = Synth('../data/FluidR3_GM.sf2')
+        self.synth = Synth('../bank/FluidR3_GM.sf2')
         self.audio.set_generator(self.synth)
         self.noteDetector = NoteDetector(self.synth)
 
