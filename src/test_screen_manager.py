@@ -30,16 +30,13 @@ from src.buttonwidget import *
 from src.crectangle import *
 
 from test.main import MainWidget as Game
-<<<<<<< HEAD
+
 from test.main import patterns, p
 from src.chord import Key
-=======
+
 from test.main import patterns
 from src.chord import Key, Chord
->>>>>>> bcb97e2af4365fd97d6e475975c67a1874620630
 
-
-from time import sleep
 
 
 MAJ = 0
@@ -267,7 +264,7 @@ class HomeScreen(Widget):
 
         # Load patterns information and create dropdown
         self.patterns_dict = {'Pattern 1': patterns, 
-                              'Pattern 2': p, 
+                              'Pattern 2: ?-V-I': p, 
                               'Pattern 3': patterns}
         self.pattern = None
         # Create dropdown for patterns
@@ -278,8 +275,6 @@ class HomeScreen(Widget):
 
         # Load keys information and create dropdown
         self._generate_keys()
-
-        ALL_KEYS = ['C', 'C#', 'D', 'Eb', 'E', "F", 'F#', 'G', 'Ab', 'A', 'Bb', 'B']
 
         self.key = None
         # Create dropdown for keys
