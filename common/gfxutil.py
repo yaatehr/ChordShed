@@ -22,10 +22,10 @@ import numpy as np
 
 # return a Label object configured to look good and be positioned at
 # the top-left of the screen
-def topleft_label() :
+def topleft_label(x_pos_hint=.5, x_size_hint=1) :
     l = Label(text = "text", valign='top', font_size='20sp',
-              pos=(Window.width * 0.5, Window.height * 0.4),
-              text_size=(Window.width, Window.height))
+              pos=(Window.width * x_pos_hint, Window.height * 0.4),
+              text_size=(Window.width * x_size_hint, Window.height))
     return l
 
 # Override Ellipse class to add centered functionality.

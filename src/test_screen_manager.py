@@ -390,10 +390,20 @@ class InformationPage(Widget):
         self.canvas.add(Color(.3,.3,.3))
         self.canvas.add(bg)
 
-        self.info = topleft_label()
+        self.info = topleft_label(x_pos_hint=.45, x_size_hint=.9)
         self.add_widget(self.info)
-        self.info.text = 'This game is focused on teaching people common chord progressions.'
-        self.info.text += '\n\nPress "1" or click the home icon to leave this screen'
+        self.info.text = 'THE CHORD SHED - How to Use  (Press "1" to exit screen)'
+        self.info.text += '\n\n1) Plug in your MIDI keyboard and click the keyboard icon at the top left of the screen.  '
+        self.info.text += 'Follow the instructions for calibration'
+        self.info.text += '\n\n2) Once calibrated, choose a pattern from the top dropdown menu on the left side of the screen'
+        self.info.text += '\n\n3) Choose a key from the lower dropdown menu'
+        self.info.text += '\n\n4) Press "Start Game" to start playing that pattern in the specified key'
+        self.info.text +=    '  You must have selected a pattern and a key to start the game'
+        self.info.text += '\n\n5) During game play, a gem (or set of gems) will appear, and a visible keyboard will also appear to assist you'
+        self.info.text +=    '  The Keyboard will play and visualize the current progression. Then you will have .5 seconds (per gem) to play the correct chord'
+        self.info.text += '\n\n6) If you mess up on a progression, the game will give you a second chance to play the progression again'
+        self.info.text +=    '  You will receive points for correctly hit chords, and you will be penalized for incorrect/missed chords'
+        self.info.text += '\n\n7) Upon completion of the game, you will be taken to the statistics screen, where you can see how well you did with each progression in the exercise'
 
 
     def on_key_down(self, keycode, modifiers):
