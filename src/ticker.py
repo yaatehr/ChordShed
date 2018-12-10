@@ -53,6 +53,7 @@ class Ticker(object):
         self.gem_commands = []
         self.bar_tick = 0
         self.bar_index = 0
+        print(songPattern)
     
     def reset(self):
         #TODO

@@ -12,6 +12,7 @@ from src.chord import Chord, Key
 from rep.patterns import patternReader
 from common.clock import kTicksPerQuarter, quantize_tick_up
 import pickle
+import numpy as np
 
 def loadPatterns():
     for (dirpath, dirnames, filenames) in os.walk(os.path.join(os.path.dirname('__file__'), '../patterns')):
@@ -21,11 +22,15 @@ def loadPatterns():
 
 def loadSaveData(patternKey="1: someString", key=Key()):
     patternString = patternKey[3:]
-    filePath = '../data/%s%s' % (patternString, key)
+    filePath = '../data/%s%s.txt' % (patternString, key)
     saveData = None
     print(filePath)
     if os.path.isfile(filePath):
-        saveData = pickle.load(filePath)
+        try:
+            saveData = pickle.load(open(filePath, 'rb'))
+        except Exception as a:
+            print("SAVING DATA FAILED, see error below")
+            print(a)
     return saveData
 
 # patterns = loadPatterns()
@@ -37,8 +42,9 @@ class ScoreCard(object):
     Holds the score for a particular pattern in a particular key
     '''
     numRepeats = 3
-    def __init__(self, pattern, key):
+    def __init__(self, pattern, key, patternString):
         self.pattern = pattern # array of array of tuples in format (roman numeral, beat)
+        self.patternString = patternString
         self.bars = [] # array of scores for each bar in the pattern
         self.key = key
         max_score = 0
@@ -166,7 +172,7 @@ class BarData(object):
         hitKeys = set(noteHits.keys())
         histogram = dict()
         for key in missedKeys.intersection(hitKeys):
-            entry = [0,0]
+            entry = np.array([0,0])
             if key in missedKeys:
                 entry[1] = noteMisses[key]
             if key in hitKeys:

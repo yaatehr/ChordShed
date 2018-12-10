@@ -15,7 +15,7 @@ class Player(InstructionGroup):
         super(Player, self).__init__()
         self.play = False
         self.scoreCard = None
-        self.pattern = pattern
+        self.pattern, self.patternString = pattern
         self.key = key
         self.update_target = targetCallback
         self.update_root_score = scoreCallback # for when this is done
@@ -39,7 +39,7 @@ class Player(InstructionGroup):
     def play_game(self):
         self.play = True
         if not self.scoreCard:
-            self.scoreCard = ScoreCard(self.pattern, self.key)
+            self.scoreCard = ScoreCard(self.pattern, self.key, self.patternString)
             # self.scoreCard.clear()
         if self.barNum == -1:
             self.status = "next"
@@ -128,6 +128,10 @@ class Player(InstructionGroup):
         # self.catch_passes()
         
     def catch_passes(self, tickerCall=False):
+
+        if self.barNum > len(self.pattern) - 1:
+            return self.increment_bar()
+
         if self.status == "call" or not self.targetGem:
             self.targetGem = None
             return
