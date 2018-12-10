@@ -225,7 +225,11 @@ class RootWidget(BaseWidget) :
             self.save_data = self.load_save_data(pattern=score_card.pattern, key=score_card.key)
 
         data = self.save_data.load_card_info(score_card)
+        print(data)
+
+        self.pattern, self.key = score_card.pattern, score_card.key
         self.switchScreen('score')
+
 
     def _initialize_controller(self):
         self.note_detector.reset(hard=True)
@@ -329,7 +333,7 @@ class HomeScreen(Widget):
         '''Callback to switch to stats card'''
         if self.pattern and self.key:
             self.parent.load_save_data(self.pattern, self.key)
-            self.parent.switchScreen('score')
+            self.parent.switchScreen('score', pattern=self.pattern, key=self.key)
         else:
             print('Please select a pattern and a key signature')
 
@@ -372,25 +376,34 @@ class ScoreViewer(Widget):
     '''
     Dummy widget for testing basic score card functionality
     '''
-    def __init__(self, pattern=None, key=None):
+    def __init__(self, pattern=None, key=None, aggregate=0):
         super(ScoreViewer, self).__init__(size=(Window.width, Window.height))
 
         self.info = topleft_label()
         self.add_widget(self.info)
         self.info.text = 'Press SPACE to shift through bars'
-        self.dataPlayer = DataPlayer(callback = self.nextBeat)
+        #self.dataPlayer = DataPlayer(callback = self.nextBeat)
 
         self.pattern = pattern 
         self.key = key
 
+        self.canvas.add(Color(.3,.3,.3))
         crect = CRectangle(cpos=(Window.width//2, Window.height//2), csize=(Window.width,Window.height))
         self.canvas.add(crect)
 
+
+        self.canvas.add(Color(1,1,1))
+        self.card = CRectangle(cpos=(Window.width//2, Window.height//2), csize=(self.width//4, self.height//4))
+        text = "No Info right now"
+        label = CoreLabel(text, pos=self.card.cpos)
+        label.refresh()
+        self.card.texture = label.texture
+        self.canvas.add(self.card)
+
         self.barNum = -1
 
-        self.score_dict = {}
+        #self.score_dict = {}
         self.data = None
-
 
 
     def nextBeat(self):
@@ -399,6 +412,9 @@ class ScoreViewer(Widget):
             # self.data.nextBeat()
     
 
+    def generate_info(self):
+        if self.barNum == -1:
+            pass
 
 
 

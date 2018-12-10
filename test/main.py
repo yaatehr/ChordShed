@@ -69,7 +69,7 @@ class MainWidget(BaseWidget) :
         self.detector.initializePlayer(self.player)
 
         crect = CRectangle(cpos=(Window.width//2, Window.height//2), csize=(Window.width,Window.height))
-        crect.texture = Image('../images/blackboard.png').texture
+        crect.texture = Image('../images/Blackboard.png').texture
         self.canvas.add(crect)
 
         self.canvas.add(self.player)
