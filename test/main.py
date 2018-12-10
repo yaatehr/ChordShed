@@ -52,7 +52,7 @@ class MainWidget(BaseWidget) :
         ALL graphical components are controlled by the clock (update isnt' run if clock isn't playing)
          '''
         self.mixer = mixer
-        self.pattern = masterPattern
+        self.pattern, self.patternString = masterPattern
         self.key = key
 
         #Audio     
@@ -64,7 +64,7 @@ class MainWidget(BaseWidget) :
         self.ticker = Ticker(self.pattern, key, self.clock)
         self.mixer.add(self.ticker.synth)
         self.player = Player(
-            self.ticker, self.clock, self.pattern, self.key, noteDetector.updateTargetChord, noteDetector.getActiveNotes, callback)
+            self.ticker, self.clock, masterPattern, self.key, noteDetector.updateTargetChord, noteDetector.getActiveNotes, callback)
         self.ticker.initialize_callbacks(self.player.increment_bar, self.player.catch_passes)
         self.detector.initializePlayer(self.player)
 

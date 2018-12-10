@@ -29,7 +29,7 @@ from src.notedetector import NoteDetector
 from src.buttonwidget import *
 from src.crectangle import *
 from src.score import *
-
+import pickle
 from test.main import MainWidget as Game
 
 from src.chord import Key, Chord
@@ -140,7 +140,7 @@ class RootWidget(BaseWidget) :
             if not self._has_midi_input():
                 return self.home
             if 'pattern' in kwargs and 'key' in kwargs:
-                return Game( masterPattern=kwargs['pattern']\
+                return Game( masterPattern=(kwargs['pattern'], kwargs['patternString'])\
                     , key=kwargs['key']\
                     , noteDetector=self.note_detector\
                     , mixer=self.mixer
@@ -222,7 +222,7 @@ class RootWidget(BaseWidget) :
         print("retrieving score card from player class")
         self.score_card = score_card
         if not self.save_data:
-            self.save_data = self.load_save_data(pattern=score_card.pattern, key=score_card.key)
+            self.save_data = self.load_save_data(score_card.pattern, score_card.key, score_card.patternString)
 
         data = self.save_data.load_card_info(score_card)
         print(data)
@@ -257,9 +257,9 @@ class RootWidget(BaseWidget) :
         self.note_detector.updateTargetChord(chord)
         self.key_range = key_range
 
-    def load_save_data(self, pattern, key):
+    def load_save_data(self, pattern, key, patternString):
         loadedData = loadSaveData()
-        self.save_data = loadedData if loadedData else SaveData(pattern, key)
+        self.save_data = loadedData if loadedData else SaveData(pattern, key, patternString)
         return 
 
 class HomeScreen(Widget):
@@ -313,6 +313,7 @@ class HomeScreen(Widget):
 
     def set_pattern(self, obj, txt):
         self.pattern = self.patterns_dict[txt]
+        self.patternString = txt
         print("Pattern changed to:", self.pattern)
 
     def set_key(self, obj, txt):
@@ -323,8 +324,8 @@ class HomeScreen(Widget):
     def switch_to_game_screen(self, button):
         '''Callback to switch to game screen'''
         if self.pattern and self.key:
-            self.parent.load_save_data(self.pattern, self.key)
-            self.parent.switchScreen('game', pattern=self.pattern, key=self.key)
+            self.parent.load_save_data(self.pattern, self.key, self.patternString)
+            self.parent.switchScreen('game', pattern=self.pattern, key=self.key, patternString = self.patternString)
         else:
             print('Please select a pattern and a key signature')
 
@@ -334,6 +335,8 @@ class HomeScreen(Widget):
         if self.pattern and self.key:
             self.parent.load_save_data(self.pattern, self.key)
             self.parent.switchScreen('score', pattern=self.pattern, key=self.key)
+            self.parent.load_save_data(self.pattern, self.key, self.patternString)
+            self.parent.switchScreen('score')
         else:
             print('Please select a pattern and a key signature')
 
@@ -452,23 +455,43 @@ class ScoreViewer(Widget):
 
 
 class SaveData(object):
-    def __init__(self, pattern, key):
+    def __init__(self, pattern, key, patternString):
         super(SaveData, self).__init__()
         self.card = None
+        self.histogram = dict()
         self.bar_data = []
         self.idx = 0
+        self.pattern = pattern
+        self.patternString = patternString
+        self.key = key
+        self.filePrefix = '../data/%s%s.txt' % (patternString[3:], key)
 
 
     def load_card_info(self, card):
+        assert card.key.__str__() == self.key.__str__(), "ERROR, KEYS MUST MATCH"
         self.card = card
         for bar in self.card.bars:
             bar_data = [bar.getHistogram(b[1]) for b in bar.pattern]
             self.bar_data.append( bar_data )
+            self.add_bar_histogram(bar_data)
+        try:
+            pickle.dump(self, open(self.filePrefix, 'wb+'))
+        except Exception as a:
+            print("SAVING DATA FAILED, see error below")
+            print(a)
         return self.bar_data
+
+    def add_bar_histogram(self, bar_data):
+        for bar in bar_data:
+            for key in bar.keys():
+                if key in self.histogram.keys():
+                    self.histogram[key] += bar_data[key]
+                else:
+                    self.histogram[key] = np.copy(bar_data[key])
 
     def next_beat(self):
         if self.bar_data:
-            if self.idx + 1 > len(pattern):
+            if self.idx + 1 > len(self.pattern):
                 return self.bar_data[self.idx]
 
 
