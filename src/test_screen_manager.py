@@ -151,8 +151,6 @@ class RootWidget(BaseWidget) :
                 return ScoreViewer( pattern=kwargs['pattern']\
                     , key=kwargs['key'])
 
-        elif screenName == 'score' and self.score_card:
-            return ScoreCard(self.score_card)
         elif screenName == 'home':
             self.home._generate_keys()
             return self.home
@@ -335,9 +333,7 @@ class HomeScreen(Widget):
         '''Callback to switch to stats card'''
         if self.pattern and self.key:
             self.parent.load_save_data(self.pattern, self.key, self.patternString)
-            self.parent.switchScreen('score', pattern=self.pattern, key=self.key)
-            self.parent.load_save_data(self.pattern, self.key, self.patternString)
-            self.parent.switchScreen('score')
+            self.parent.switchScreen('score',  pattern=self.pattern, key=self.key, patternString = self.patternString)
         else:
             print('Please select a pattern and a key signature')
 
@@ -402,6 +398,7 @@ class ScoreViewer(Widget):
         self.canvas.add(self.card)
 
         self.gui = KeyboardGui()
+        self.canvas.add(self.gui)
         self.player = DataPlayer(callback=self.gui.preview)
 
 
@@ -425,6 +422,7 @@ class ScoreViewer(Widget):
             self.barData = self.data.bar_data
         else:
             self.barData = None
+        self.display_bar()
 
     def display_bar(self):
         if not self.barData:
@@ -471,7 +469,8 @@ class ScoreViewer(Widget):
 
 
     def on_update(self):
-        pass
+        # self.player.on_update()
+        self.gui.on_update()
 
 
     def __str__(self):
