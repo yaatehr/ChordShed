@@ -17,9 +17,7 @@ class NoteDetector(object):
         self.playingNotes = LRUDict(maxduration=self.noteTimeout, maxsize=self.noteCap) 
         # holds a tuple of what notes are playing and how long they have been playing
         self.playedNotes = []
-        # self.chords = self.initializeChords()
         self.synth = synth
-        self.detectingKey = 'C'
         self.targetChord = None
         self.targetMidi = None
         self.correctNotes = set()
@@ -34,15 +32,20 @@ class NoteDetector(object):
         self.reset()        
         #TODO add clearing logic and refresh notes (we still want the mto decay)
 
-    def reset(self):
+    def reset(self, hard=False):
         self.playingNotes.clear()
+        if hard:
+            self.targetMidi = None
+            self.targetChord = None
+            self.correctNotes = set()
+            self.incorrectNotes = set()
 
     def initializePlayer(self, player): #to initialize player class callbacks
         self.onHit = player.on_hit
         self.onInput = player.on_input
 
     def callback(self, message):
-        print(message)
+
         if message.type == 'note_off':
             if message.note in self.playingNotes.keys():
                 start = self.playingNotes.pop(message.note)

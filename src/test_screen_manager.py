@@ -31,7 +31,7 @@ from src.crectangle import *
 
 from test.main import MainWidget as Game
 from test.main import patterns
-from src.chord import Key
+from src.chord import Key, Chord
 
 
 MAJ = 0
@@ -70,6 +70,7 @@ def create_dropdown(options, width, height, pos):
 
 
 class RootWidget(BaseWidget) :
+    key_range = [48, 72]
     midiInput = None
     mixer = Mixer()
     playerSynth = Synth('../data/FluidR3_GM.sf2')
@@ -106,8 +107,10 @@ class RootWidget(BaseWidget) :
         self._initialize_controller()
         new_widget = self.generateWidget(screenName, **kwargs)
         
-        if self.info in self.children and self.calibrate in self.children:
+        if self.info in self.children:
             self.remove_widget(self.info)
+
+        if self.calibrate in self.children:
             self.remove_widget(self.calibrate)
 
         if self.widget:
@@ -142,10 +145,12 @@ class RootWidget(BaseWidget) :
         elif screenName == 'score':
             return ScoreCard()
         elif screenName == 'home':
+            self.home._generate_keys()
             return self.home
         elif screenName == 'info':
             return InformationPage()
         elif screenName == 'calibrate':
+            print()
             return PianoCalibrator()
         print('No screen named:', screenName)
         return self.home
@@ -197,8 +202,10 @@ class RootWidget(BaseWidget) :
 
 
     def _initialize_controller(self):
+        self.note_detector.reset(hard=True)
         if self._has_midi_input():
             print('has midi input')
+            self.midiInput.callback = self.note_detector.callback
             return True
         inport = None
         try: 
@@ -214,6 +221,11 @@ class RootWidget(BaseWidget) :
 
     def _has_midi_input(self):
         return self.midiInput is not None
+
+    def set_keyboard_range(self, key_range):
+        chord = Chord(customMidi = key_range)
+        self.note_detector.updateTargetChord(chord)
+        self.key_range = key_range
 
 
 
@@ -255,32 +267,7 @@ class HomeScreen(Widget):
         self.dd_p.bind(on_select=self.set_pattern)
 
         # Load keys information and create dropdown
-        self.keys_dict = {'A Major':     Key(key='A', quality=MAJ), 
-                          'A#/Bb Major': Key(key='Bb', quality=MAJ), 
-                          'B Major':     Key(key='B', quality=MAJ), 
-                          'C Major':     Key(key='C', quality=MAJ), 
-                          'C#/Db Major': Key(key='C#', quality=MAJ), 
-                          'D Major':     Key(key='D', quality=MAJ), 
-                          'D#/Eb Major': Key(key='Eb', quality=MAJ), 
-                          'E Major':     Key(key='E', quality=MAJ), 
-                          'F Major':     Key(key='F', quality=MAJ), 
-                          'F#/Gb Major': Key(key='F#', quality=MAJ), 
-                          'G Major':     Key(key='G', quality=MAJ), 
-                          'G#/Ab Major': Key(key='Ab', quality=MAJ),
-                          
-                          'A Minor':     Key(key='A', quality=MIN), 
-                          'A#/Bb Minor': Key(key='Bb', quality=MIN), 
-                          'B Minor':     Key(key='B', quality=MIN), 
-                          'C Minor':     Key(key='C', quality=MIN), 
-                          'C#/Db Minor': Key(key='C#', quality=MIN), 
-                          'D Minor':     Key(key='D', quality=MIN), 
-                          'D#/Eb Minor': Key(key='Eb', quality=MIN), 
-                          'E Minor':     Key(key='E', quality=MIN), 
-                          'F Minor':     Key(key='F', quality=MIN), 
-                          'F#/Gb Minor': Key(key='F#', quality=MIN), 
-                          'G Minor':     Key(key='G', quality=MIN), 
-                          'G#/Ab Minor': Key(key='Ab', quality=MIN)}
-        
+        self._generate_keys()
 
         ALL_KEYS = ['C', 'C#', 'D', 'Eb', 'E', "F", 'F#', 'G', 'Ab', 'A', 'Bb', 'B']
 
@@ -297,7 +284,6 @@ class HomeScreen(Widget):
     def set_pattern(self, obj, txt):
         self.pattern = self.patterns_dict[txt]
         print("Pattern changed to:", self.pattern)
-
 
     def set_key(self, obj, txt):
         self.key = self.keys_dict[txt]
@@ -318,8 +304,38 @@ class HomeScreen(Widget):
         self.parent.switchScreen('score')
 
 
+    def _generate_keys(self):
+        if self.parent:
+            key_range = self.parent.key_range
+        else:
+            key_range = [48, 72]
 
-
+        self.keys_dict = {'A Major': Key(range=key_range, key='A', quality=MAJ), 
+                'A#/Bb Major': Key(range=key_range, key='Bb', quality=MAJ), 
+                'B Major':     Key(range=key_range, key='B', quality=MAJ), 
+                'C Major':     Key(range=key_range, key='C', quality=MAJ), 
+                'C#/Db Major': Key(range=key_range, key='C#', quality=MAJ), 
+                'D Major':     Key(range=key_range, key='D', quality=MAJ), 
+                'D#/Eb Major': Key(range=key_range, key='Eb', quality=MAJ), 
+                'E Major':     Key(range=key_range, key='E', quality=MAJ), 
+                'F Major':     Key(range=key_range, key='F', quality=MAJ), 
+                'F#/Gb Major': Key(range=key_range, key='F#', quality=MAJ), 
+                'G Major':     Key(range=key_range, key='G', quality=MAJ), 
+                'G#/Ab Major': Key(range=key_range, key='Ab', quality=MAJ),
+                
+                'A Minor':     Key(range=key_range, key='A', quality=MIN), 
+                'A#/Bb Minor': Key(range=key_range, key='Bb', quality=MIN), 
+                'B Minor':     Key(range=key_range, key='B', quality=MIN), 
+                'C Minor':     Key(range=key_range, key='C', quality=MIN), 
+                'C#/Db Minor': Key(range=key_range, key='C#', quality=MIN), 
+                'D Minor':     Key(range=key_range, key='D', quality=MIN), 
+                'D#/Eb Minor': Key(range=key_range, key='Eb', quality=MIN), 
+                'E Minor':     Key(range=key_range, key='E', quality=MIN), 
+                'F Minor':     Key(range=key_range, key='F', quality=MIN), 
+                'F#/Gb Minor': Key(range=key_range, key='F#', quality=MIN), 
+                'G Minor':     Key(range=key_range, key='G', quality=MIN), 
+                'G#/Ab Minor': Key(range=key_range, key='Ab', quality=MIN)}
+        
 
 
 class ScoreCard(Widget):
@@ -389,30 +405,96 @@ class PianoCalibrator(Widget):
         csize = (self.width, self.height)
         bg = CRectangle(cpos=cpos, csize=csize)
 
+        self.calibration_note = 0
+        self.key_range = [48, 72]
+
         self.canvas.add(Color(.3,.3,.3))
         self.canvas.add(bg)
-        self.gui = KeyboardGui(self.parent.note_detector)
-        self.canvas.add(self.gui)
+        self.gui = None
+        # self.canvas.add(self.gui)
         self.calibration_step = 0
 
 
         self.info = topleft_label()
         self.add_widget(self.info)
+    
+    def get_key(self, message):
+        if message.type == 'note_on' or message.type == 'note_off':
+            self.calibration_note = message.note
+            self.parent.note_detector.callback(message)
 
     def on_update(self):
-        self.info.text = 'Piano Calibration'
-        self.info.text += '\t\t\Press "1" to return home'
+
+        if not self.parent:
+            return
+        if not self.gui:
+            self.gui = KeyboardGui(self.parent.note_detector)
+            self.canvas.add(self.gui)
+        self.gui.on_update(kivyClock.frametime)
+
+
+        self.info.text = 'Calibrate Your Piano'
+        self.info.text += '                 Press "1" to return home'
 
         if self.calibration_step == 0:
-            if self.parent._had_midi_input():
+            if not self.parent._has_midi_input():
                 self.info.text += '\n\n No Keyboard Connected - Press c to connect'
             else:
                 self.info.text += '\n\n Keyboard Connected - Press SPACE to begin calibration'
         elif self.calibration_step == 1:
-            self.info.text += '\n\n Press the lowest button on your keyboard'
+            self.info.text += '\n\n Press the lowest button on your keyboard then press SPACE to continue'
         elif self.calibration_step == 2:
-            pass
+            self.info.text += '\n\n Press the highest button on your keyboard then SPACE to continue.'
+        elif self.calibration_step == 3:
+            self.info.text += '\n\n If you\'re happy with the piano gui config, press SPACE to complete calibration'
+            self.info.text += '\n Press r to reset'
+        else:
+            self.calibration_step = 0
 
+    def wizard_step(self):
+        print('wizard step - state %d' % self.calibration_step)
+        inport = self.parent.midiInput
+
+        if self.calibration_step == 0:
+            if self.parent._has_midi_input():
+                self.calibration_step += 1
+                inport.callback = self.get_key
+                return
+            else:
+                print('NO KEYBOARD DETECTED - restarting the application may help.')
+        elif self.calibration_step == 1:
+            self.key_range[0] = self.calibration_note
+            self.calibration_step += 1
+            return
+        elif self.calibration_step == 2:
+            self.key_range[1] = self.calibration_note
+            self.parent.set_keyboard_range(self.key_range)
+            self.calibration_step += 1
+            return
+        elif self.calibration_step == 3:
+            self.calibration_step = 0
+            inport.callback = self.parent.note_detector.callback
+        else:
+            inport.callback = self.parent.note_detector.callback
+            self.calibration_step = 0
+
+    def restart_wizard(self):
+        self.calibration_step = 1
+        self.parent.midiInput.callback = self.get_key
+
+    def on_key_down(self, keycode, modifiers):
+
+        if keycode[1] == 'spacebar':
+            self.wizard_step()
+        
+        if keycode[1] == 'r':
+            self.restart_wizard()
+
+        if keycode[1] == 'c' and self.midiInput is None:
+            self.parent._initialize_controller()
+        
+        if  keycode[1] == '1':
+            return False
 
 ###########################################################
 #                                                         #
