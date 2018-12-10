@@ -59,7 +59,7 @@ class MainWidget(BaseWidget) :
     playing = False
     info = topleft_label()
 
-    def __init__(self, masterPattern=None, key=None, fileName='testoutput.txt', noteDetector=None, mixer=None, callback=None):
+    def __init__(self, masterPattern=patterns, key=None, fileName='testoutput.txt', noteDetector=None, mixer=None, callback=None):
         super(MainWidget, self).__init__()
         '''
         The main game instance, the pattern and keys are loaded before the screen is initialized
@@ -77,7 +77,7 @@ class MainWidget(BaseWidget) :
         self.detector = noteDetector
         self.ticker = Ticker(self.pattern, key, self.clock)
         self.mixer.add(self.ticker.synth)
-        self.player = Player(self.ticker, self.clock, noteDetector.updateTargetChord)
+        self.player = Player(self.ticker, self.clock, self.pattern, noteDetector.updateTargetChord, noteDetector.getActiveNotes)
         self.ticker.initialize_callbacks(self.player.increment_bar, self.player.catch_passes)
         self.detector.initializePlayer(self.player)
         self.canvas.add(self.player)

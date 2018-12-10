@@ -62,7 +62,7 @@ class Ticker(object):
     def create_bar(self, barIndex):
         self.bar_tick = quantize_tick_up(self.scheduler.get_tick())
         self.active_gems = self.gems[barIndex]
-        print(list(map(lambda x: x.beat, self.active_gems)))
+        # print(list(map(lambda x: x.beat, self.active_gems)))
         # [gem.activate() for gem in self.active_gems]
         self._initializeBarAudio(barIndex)
         self._initializeBarGems(barIndex)
@@ -177,13 +177,10 @@ class Ticker(object):
 
     def _clearBarGems(self):
         for gem in self.active_gems:
-            pass
-            # gem.exit()
+            # pass
+            gem.exit()
         
     def _onCompleteMeasure(self, tick, temp=None):
-        if self.on_update() == "call":
-            return
-
         allHit = True
         for gem in self.active_gems:
             allHit = allHit and gem.hit
@@ -191,19 +188,17 @@ class Ticker(object):
             self.increment_bar()
             print('increment bar')
         else:
-            print("measure over, resetting gems - %f" % self.getRelativeTick())
+            # print("measure over, resetting gems - %f" % self.getRelativeTick())
             self.catch_passes(True)
             self._refreshBarGems()
 
     def _startGemTimer(self, tick, gem):
         ''' starts the gem timer'''
-        print("start gem timer %f " % self.getRelativeTick())
+        # print("start gem timer %f " % self.getRelativeTick())
         if not gem.hit:
             gem.activate()
 
     def _playChord(self, tick, chord):
-        print(chord._getMidiTones())
-        print(chord.octave)
         for note in chord._getMidiTones():
             self.synth.noteon(self.channel, note, self.vel)
     
