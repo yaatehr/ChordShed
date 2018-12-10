@@ -334,7 +334,7 @@ class HomeScreen(Widget):
     def switch_to_score_card(self, button):
         '''Callback to switch to stats card'''
         if self.pattern and self.key:
-            self.parent.load_save_data(self.pattern, self.key)
+            self.parent.load_save_data(self.pattern, self.key, self.patternString)
             self.parent.switchScreen('score', pattern=self.pattern, key=self.key)
             self.parent.load_save_data(self.pattern, self.key, self.patternString)
             self.parent.switchScreen('score')
@@ -386,7 +386,6 @@ class ScoreViewer(Widget):
         self.info = topleft_label()
         self.add_widget(self.info)
         self.info.text = 'Press SPACE to shift through bars'
-        #self.dataPlayer = DataPlayer(callback = self.nextBeat)
 
         self.pattern = pattern 
         self.key = key
@@ -403,6 +402,8 @@ class ScoreViewer(Widget):
         self.canvas.add(self.card)
 
         self.gui = KeyboardGui()
+        self.player = DataPlayer(callback=self.gui.preview)
+
 
 
         self.barNum = -1
@@ -411,6 +412,9 @@ class ScoreViewer(Widget):
         self.data = None
         self.barData = None
 
+
+    def tick(self):
+        self.gui.previewNotes()
 
 
     def nextBar(self, increment=1):
@@ -422,9 +426,13 @@ class ScoreViewer(Widget):
         else:
             self.barData = None
 
-    # def display_bar(self):
-    #     if not self.barData:
-    #         self.
+    def display_bar(self):
+        if not self.barData:
+            self.gui.setPreviewNoets(None, None)
+            self.player.stop()
+        else:
+            self.gui.setPreviewNotes(self.barData[self.barNum], self.pattern[self.barNum])
+            self.player.start()
 
     def nextBeat(self):
 

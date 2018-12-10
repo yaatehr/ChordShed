@@ -10,8 +10,9 @@ from kivy.graphics import Color, Rectangle
 from rep.gem import Gem
 from src.chord import Chord, Key
 from rep.patterns import patternReader
-from common.clock import kTicksPerQuarter, quantize_tick_up
+from common.clock import kTicksPerQuarter, quantize_tick_up, Scheduler, Clock
 import pickle
+
 import numpy as np
 
 def loadPatterns():
@@ -258,9 +259,9 @@ class Card(InstructionGroup):
 class DataPlayer(object):
     """Plays a steady click every beat.
     """
-    def __init__(self, sched, callback = None):
+    def __init__(self, callback = None):
         super(DataPlayer, self).__init__()
-        self.sched = sched
+        self.sched = Scheduler(Clock(), tempo_map=[(0,0), (100000000000, 100000000000/60*480)])
         self.beat_len = kTicksPerQuarter
         self.on_cmd = None
         self.off_cmd = None

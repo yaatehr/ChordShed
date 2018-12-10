@@ -43,7 +43,16 @@ class GuiKey(InstructionGroup):
         self.add(self.color)
         self.add(self.rect)
 
-    def keyPress(self, correct= False, manualPress=False):
+    def setKeyRgba(self, num, denom):
+        self.activeColor = [*self.correctColor]
+        self.activeColor[3] = num/denom
+        self.color.rgba = self.activeColor
+
+    def keyPress(self, correct= False, manualPress=False, showCase = False):
+        if showCase:
+            self.disactivateAnim = KFAnim((0, *self.activeColor), (self.timeout, *self.inactiveColor))
+            self.activateAnim = KFAnim((0, *self.inactiveColor), (self.timeout, *self.activeColor))
+            return
         if correct:
             self.activeColor = self.correctColor
             self.disactivateAnim = KFAnim((0, *self.activeColor), (self.timeout, *self.inactiveColor))
@@ -73,7 +82,7 @@ class KeyboardGui(InstructionGroup):
     blackKey = [True, True, False, True, True, True, False]
     borderColor = (.5,.5,.5,1)
     padding = 10
-    def __init__(self, note_detector):
+    def __init__(self, note_detector=None):
         super(KeyboardGui, self).__init__()
         self.numOctaves = 2
         self.keys = []
@@ -85,8 +94,13 @@ class KeyboardGui(InstructionGroup):
         self.add(self.objects)
         self.initializeKeys()
         self.noteDetector = note_detector
+        self.previewNotes = None
+        self.previewPattern = None
+        self.index = 0
 
     def updateGui(self):
+        if not self.noteDetector:
+            return
         highlights = self.noteDetector.targetMidi
         correct, incorrect = self.noteDetector.getActiveNotes()
 
@@ -100,11 +114,29 @@ class KeyboardGui(InstructionGroup):
                     self.keys[note%(12*self.numOctaves)].keyPress()
 
 
-    def previewNotes(self, notes, pattern):
-        [key.on_update(100) for key in self.keys] # timeout all the keys
+    def setPreviewNotes(self, notes, pattern):
+        self.previewNotes = notes
+        self.previewPattern = pattern
 
-        for note in notes.key:
-            pass
+
+    def preivew(self):
+
+        [key.on_update(100) for key in self.keys] # timeout all the keys
+        if not self.previewNotes:
+            self.index = 0
+            return
+
+        currentDict = self.previewNotes[self.index]
+        for note in currentDict.keys():
+            if note in self.previewPattern[self.index]:
+                num, denom = self.currentDict[note]
+                self.keys[x%(12*self.numOctaves)].keyPress(correct=True, manualPress=True)
+            else:
+                num, denom = self.currentDict[note]
+                self.keys[x%(12*self.numOctaves)].keyPress(correct=False, manualPress=True)
+        
+        self.index += 1
+        self.index%= len(self.previewNotes.keys())
 
 
     def initializeKeys(self):
