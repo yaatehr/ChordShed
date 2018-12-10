@@ -74,6 +74,7 @@ def create_dropdown(options, width, height, pos):
 class RootWidget(BaseWidget) :
     key_range = [48, 72]
     midiInput = None
+    save_data = None
     mixer = Mixer()
     playerSynth = Synth('../bank/FluidR3_GM.sf2')
     def __init__(self):
@@ -142,7 +143,8 @@ class RootWidget(BaseWidget) :
                 return Game( masterPattern=kwargs['pattern']\
                     , key=kwargs['key']\
                     , noteDetector=self.note_detector\
-                    , mixer=self.mixer)
+                    , mixer=self.mixer
+                    , callback = self.retrieve_score_card)
             
         elif screenName == 'score':
             if 'pattern' in kwargs and 'key' in kwargs:
@@ -218,6 +220,9 @@ class RootWidget(BaseWidget) :
         '''
         print("retrieving score card from player class")
         self.score_card = score_card
+        if not self.save_data:
+            self.save_data = self.load_save_data(pattern=score_card.pattern, key=score_card.key)
+
         data = self.save_data.load_card_info(score_card)
         self.switchScreen('score')
 
@@ -248,8 +253,10 @@ class RootWidget(BaseWidget) :
         self.note_detector.updateTargetChord(chord)
         self.key_range = key_range
 
-
-
+    def load_save_data(self, pattern, key):
+        loadedData = loadSaveData()
+        self.save_data = loadedData if loadedData else SaveData(pattern, key)
+        return 
 
 class HomeScreen(Widget):
     def __init__(self):
@@ -312,6 +319,7 @@ class HomeScreen(Widget):
     def switch_to_game_screen(self, button):
         '''Callback to switch to game screen'''
         if self.pattern and self.key:
+            self.parent.load_save_data(self.pattern, self.key)
             self.parent.switchScreen('game', pattern=self.pattern, key=self.key)
         else:
             print('Please select a pattern and a key signature')
@@ -319,8 +327,11 @@ class HomeScreen(Widget):
 
     def switch_to_score_card(self, button):
         '''Callback to switch to stats card'''
-        print('running')
-        self.parent.switchScreen('score')
+        if self.pattern and self.key:
+            self.parent.load_save_data(self.pattern, self.key)
+            self.parent.switchScreen('score')
+        else:
+            print('Please select a pattern and a key signature')
 
 
     def _generate_keys(self):
@@ -383,9 +394,6 @@ class ScoreViewer(Widget):
     
 
 
-    def load_save_data(self, pattern, key):
-        # self.data = SaveData(pattern, key)
-        pass
 
 
     def on_key_down(self, keycode, modifiers):
@@ -422,22 +430,22 @@ class ScoreViewer(Widget):
 
 class SaveData(object):
     def __init__(self, pattern, key):
-        super(SaveData, self).__init__(size=(Window.width, Window.height))
+        super(SaveData, self).__init__()
         self.card = None
         self.bar_data = []
 
 
-#     def load_card_info(self, card):
-#         self.card = card
-#         for bar in self.card.bars:
-#             bar_data = [bar.getHistogram(b[1]) for b in bar]
-#             self.bar_data.append( bar_data )
-#         return self.bar_data
+    def load_card_info(self, card):
+        self.card = card
+        for bar in self.card.bars:
+            bar_data = [bar.getHistogram(b[1]) for b in bar.pattern]
+            self.bar_data.append( bar_data )
+        return self.bar_data
 
 
-#     def clear_card(self):
-#         self.card = None
-#         self.bar_data = []
+    def clear_card(self):
+        self.card = None
+        self.bar_data = []
 
 
 

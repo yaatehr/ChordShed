@@ -11,11 +11,11 @@ from common.wavesrc import *
 from common.gfxutil import *
 from common.synth import *
 from common.clock import Clock as GameClock
-
+from kivy.core.image import Image
 from kivy.graphics.instructions import InstructionGroup
 from kivy.graphics import Color, Ellipse, Line, Rectangle
 from kivy.graphics import PushMatrix, PopMatrix, Translate, Scale, Rotate
-
+from src.crectangle import *
 from kivy.core.window import Window
 from kivy.core.text import Label as CoreLabel
 import os
@@ -67,6 +67,11 @@ class MainWidget(BaseWidget) :
             self.ticker, self.clock, self.pattern, self.key, noteDetector.updateTargetChord, noteDetector.getActiveNotes, callback)
         self.ticker.initialize_callbacks(self.player.increment_bar, self.player.catch_passes)
         self.detector.initializePlayer(self.player)
+
+        crect = CRectangle(cpos=(Window.width//2, Window.height//2), csize=(Window.width,Window.height))
+        crect.texture = Image('../images/blackboard.png').texture
+        self.canvas.add(crect)
+
         self.canvas.add(self.player)
         self.canvas.add(self.gui)
         #midi input state
@@ -110,10 +115,12 @@ class MainWidget(BaseWidget) :
         # check for midi input and add onscreen indicator
 
         if not self.parent._has_midi_input():
-            self.info.text = "No Keyboard Connected"
+            self.info.text = "\n\nNo Keyboard Connected"
         else:
             if self.player.scoreCard:
-                self.info.text = "Score: %d" % self.player.scoreCard.getScore()
+                self.info.text = "\n\nScore: %d" % self.player.scoreCard.getScore()
+            else:
+                self.info.text = "\n\nPress o to Start!"
         
 
 

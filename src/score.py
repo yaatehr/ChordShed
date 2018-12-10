@@ -93,6 +93,7 @@ class BarData(object):
     def __init__(self, index, barPattern):
         self.noteMisses = dict()
         self.chordHits = dict()
+        self.pattern = barPattern
         for degree, beat in barPattern:
             self.noteMisses[beat] = dict()
             self.chordHits[beat] = dict()
@@ -161,8 +162,8 @@ class BarData(object):
         '''
         noteMisses = self.noteMisses[beat]
         noteHits = self.chordHits[beat]
-        missedKeys = noteMisses.keys()
-        hitKeys = noteHits.keys()
+        missedKeys = set(noteMisses.keys())
+        hitKeys = set(noteHits.keys())
         histogram = dict()
         for key in missedKeys.intersection(hitKeys):
             entry = [0,0]

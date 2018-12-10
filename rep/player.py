@@ -49,6 +49,10 @@ class Player(InstructionGroup):
         self.play = False
 
     def increment_bar(self, perfect=False):
+        if self.barNum > len(self.pattern) -1:
+            self.update_root_score(self.scoreCard)
+            self.play = False
+
         if self.objects.size(): #wrap up last bar
             if perfect:
                 self.scoreCard.perfect_bar(self.barNum, self.ticker.bars_remaining())

@@ -20,7 +20,7 @@ class Ticker(object):
     This class assumes quarter notes as beats.
     becase every loop in this game is 4 measures, we will assume a loop to last 16 beats.  (4/4)
     '''
-    bpm = 60
+    bpm = 200
     numRepeats = 3
     measuresPerCall = 1
     channel = 0
@@ -110,7 +110,7 @@ class Ticker(object):
             return "response"
         else:
             # print("tick %f, ticksEll %f, barTick %f, barLen %f " % (tick, ticksEllapsed, self.bar_tick, self.barLenTicks))
-            # print('nextStatus')
+            print('nextStatus')
             return "next"
 
     def bars_remaining(self):
@@ -196,7 +196,7 @@ class Ticker(object):
             self.increment_bar(perfect=allHit)
             print('increment bar')
         else:
-            # print("measure over, resetting gems - %f" % self.getRelativeTick())
+            print("measure over, resetting gems - %f" % self.getRelativeTick())
             self.catch_passes(True)
             self._refreshBarGems()
 
