@@ -23,6 +23,7 @@ class Gem(InstructionGroup):
     def __init__(self, chord, cpos, radius, timeout_len, beat=1):
         super(Gem, self).__init__()
         
+        # generate png file for creating the image
         fp_png = '../images/' + chord.key.lower() + '-' + QUALITIES_FP[chord.quality] + '.png'
         texture = Image(fp_png).texture
 
