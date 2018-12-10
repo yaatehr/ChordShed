@@ -17,6 +17,7 @@ from src.chord import Chord, Key
 from rep.patterns import Pattern
 from random import Random
 import math
+from common.clock import kTicksPerQuarter, quantize_tick_up
 
 
 pathToSaves = "../local/"
@@ -28,6 +29,10 @@ def getAllGems(pattern):
         output.extend(pattern.generate_bar())
     return output
 
+
+def patternKeyPrefix(pattern, key):
+    prefix = "saves/"
+    prefix += pattern.__str__()
 
 
 
@@ -239,6 +244,7 @@ class SaveData(object):
         
     def clear(self):
         self.gemHits = dict()
+
         
     def saveFiles(self):
         try:
@@ -277,6 +283,62 @@ class Card(InstructionGroup):
         pass
         # print('homescreenUpdate')
         
+
+
+
+class DataPlayer(object):
+    """Plays a steady click every beat.
+    """
+    def __init__(self, sched, callback = None):
+        super(DataPlayer, self).__init__()
+        self.sched = sched
+        self.beat_len = kTicksPerQuarter
+
+        # run-time variables
+        self.on_cmd = None
+        self.off_cmd = None
+        self.playing = False
+        self.callback = None
+
+    def start(self):
+        if self.playing:
+            return
+
+        self.playing = True
+        # find the tick of the next beat, and make it "beat aligned"
+        now = self.sched.get_tick()
+        next_beat = quantize_tick_up(now, self.beat_len)
+
+        # now, post the _noteon function (and remember this command)
+        self.on_cmd = self.sched.post_at_tick(self.tick, next_beat)
+
+    def stop(self):
+        if not self.playing:
+            return 
+            
+        self.playing = False
+
+        # in case there is a note on hanging, turn it off immediately
+        if self.off_cmd:
+            self.off_cmd.execute()
+
+        # cancel anything pending in the future.
+        self.sched.remove(self.on_cmd)
+        self.sched.remove(self.off_cmd)
+
+        # reset these so we don't have a reference to old commands.
+        self.on_cmd = None
+        self.off_cmd = None
+
+    def toggle(self):
+        if self.playing:
+            self.stop()
+        else:
+            self.start()
+
+    def tick(self, tick, ignore):
+        next_beat = tick + self.beat_len
+        self.on_cmd = self.sched.post_at_tick(self.tick, next_beat)
 
 # class ScoreScreen(BaseWidget):
 #     def __init__(self, scoreCard=ScoreCard(), callBack=None):

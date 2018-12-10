@@ -28,6 +28,7 @@ from src.notedetector import NoteDetector
 
 from src.buttonwidget import *
 from src.crectangle import *
+from src.score import *
 
 from test.main import MainWidget as Game
 
@@ -140,20 +141,23 @@ class RootWidget(BaseWidget) :
             if not self._has_midi_input():
                 return self.home
             if 'pattern' in kwargs and 'key' in kwargs:
-                print(kwargs['pattern'])
                 return Game( masterPattern=kwargs['pattern']\
                     , key=kwargs['key']\
                     , noteDetector=self.note_detector\
                     , mixer=self.mixer)
-
             
         elif screenName == 'score':
-            return ScoreCard()
+            if 'pattern' in kwargs and 'key' in kwargs:
+                return ScoreViewer( pattern=kwargs['pattern']\
+                    , key=kwargs['key'])
+
         elif screenName == 'home':
             self.home._generate_keys()
             return self.home
+
         elif screenName == 'info':
             return InformationPage()
+            
         elif screenName == 'calibrate':
             print()
             return PianoCalibrator()
@@ -343,29 +347,57 @@ class HomeScreen(Widget):
         
 
 
-class ScoreCard(Widget):
+class ScoreViewer(Widget):
     '''
     Dummy widget for testing basic score card functionality
     '''
-    def __init__(self):
-        super(ScoreCard, self).__init__(size=(Window.width, Window.height))
+    def __init__(self, pattern, key):
+        super(ScoreViewer, self).__init__(size=(Window.width, Window.height))
 
         self.info = topleft_label()
         self.add_widget(self.info)
-        self.info.text = 'Placeholder'
+        self.info.text = 'Press SPACE to shift through bars'
+        self.dataPlayer = DataPlayer(callback = self.nextBeat)
 
-        crect = CRectangle(cpos=(Window.width//2, Window.height//2), csize=(50,50))
+        crect = CRectangle(cpos=(Window.width//2, Window.height//2), csize=(Window.width,Window.height))
         self.canvas.add(crect)
+
+        self.barNum = -1
 
         self.score_dict = {}
 
+    def nextBeat(self):
+        if self.data:
+            pass
+            # self.data.nextBeat()
+    
 
-    def load_score_card(self, pattern, key):
-        pass
+
+    def load_save_data(self, pattern, key):
+        self.data = SaveData(pattern, key)
 
 
     def on_key_down(self, keycode, modifiers):
-        print("No method for this input in W")
+        if keycode[1] == 'spacebar':
+            if 'shift' in modifiers:
+                self.save_data.step(-1)
+            else:
+                self.save_data.step()
+        
+        if keycode[1] == 'r':
+            self.barNum = -1
+
+        if keycode[1] == 'left':
+            self.barNum -= 1
+        if keycode[1] == 'right':
+            self.barNum += 1
+
+        if keycode[1] == 'c' and self.midiInput is None:
+            self.parent._initialize_controller()
+        
+        if  keycode[1] == '1':
+            return False
+
 
 
     def on_update(self):
@@ -373,7 +405,7 @@ class ScoreCard(Widget):
 
 
     def __str__(self):
-        return "ScoreCard"
+        return "ScoreViewer"
 
 
 
@@ -440,11 +472,6 @@ class PianoCalibrator(Widget):
         if message.type == 'note_on' or message.type == 'note_off':
             self.calibration_note = message.note
             self.parent.note_detector.callback(message)
-
-
-    def on_key_down(self, keycode, modifiers):
-        if keycode[1] == '1':
-            return False
 
 
     def on_update(self):

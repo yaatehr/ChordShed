@@ -50,6 +50,15 @@ pattern1 = patternReader(fp1)
 pattern2 = patternReader(fp2)
 pattern3 = patternReader(fp3)
 
+
+def loadPaths():
+    for (dirpath, dirnames, filenames) in os.walk(os.path.join(os.path.dirname('__file__'), '../patterns')):
+        patternDict = {file: patternReader(os.path.join(dirpath, file)) for file in filenames}
+        print(patternDict.keys())
+    return patternDict
+
+loadPaths()
+
 patterns = (pattern1, pattern2, pattern3)
 
 defaultKey = Key()
