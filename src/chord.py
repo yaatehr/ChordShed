@@ -38,7 +38,8 @@ MAJOR_STEPS = (0, 2, 4, 5, 7, 9, 11)
 MINOR_STEPS = (0, 2, 3, 5, 7, 8, 11)
 
 class Chord(object):
-    def __init__(self, key='C',  octave=0, inversion=0, quality=MAJ):
+    def __init__(self, key='C',  octave=0, inversion=0, quality=MAJ, keyAnchor=60):
+        self.keyOffset = 60-keyAnchor
         key = 'C' if key not in ALL_KEYS else key
         self.key = key
         self.key_idx = ALL_KEYS.index(self.key) 
@@ -47,7 +48,7 @@ class Chord(object):
         self.quality = quality
         self.midiRep = self._getMidiTones()
             
-    def toString(self):
+    def __str__(self):
         '''Create string representation of chord'''
         note_idx = np.array(self.midiRep) % 12
         string_rep = ""
@@ -58,7 +59,7 @@ class Chord(object):
     def _getMidiTones(self):
         midiRep = ALL_CHORDS[self.quality][self.key_idx]
         midiRep += 12*self.octave
-        midiRep[:self.inversion] += 12
+        midiRep[:self.inversion] += 12 + self.keyOffset
         return sorted(midiRep)
 
 

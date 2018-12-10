@@ -22,7 +22,6 @@ class Player(InstructionGroup):
         self.clock = clock
         self.barNum = -1
         self.slackWin = self.ticker.slack_timout
-        print("initialize slack win at %f beats" % self.slackWin)
         self.objects = AnimGroup()
         self.add(self.objects)
         self.status = "startup"
@@ -123,7 +122,7 @@ class Player(InstructionGroup):
             targetBeat = gem.beat
             # eps = .3
    
-            if not (gem.hit or gem.miss) and currentBeat - targetBeat > self.slackWin:
+            if not (gem.hit or gem.miss) and currentBeat - targetBeat > self.slackWin/2:
                 print("caught pass - curr %f, target %f, slackWin %f, relativeTick %f" % (currentBeat, targetBeat, self.slackWin*480, self.ticker.getRelativeTick()))
                 self.score -= 1 #TODO add scoring logic
                 gem.on_miss()
@@ -132,15 +131,15 @@ class Player(InstructionGroup):
                 # self.targetGem = None
 
     def _find_nearest_gem(self):
-        tick = self.ticker.getTick()
+        # tick = self.ticker.getTick()
         targetGem = self.ticker.getTargetGem()
         if not targetGem:
-            print('no target gem: ', tick)
+            # print('no target gem: ', tick)
             return
         if targetGem is not self.targetGem:
             self.targetGem = targetGem
             # self.targetGem.focus()
-            print('new target chord %d, on beat %d' % (tick, self.targetGem.beat))
+            # print('new target chord %d, on beat %d' % (tick, self.targetGem.beat))
             chord = targetGem.get_chord()
             # self.chordKeys = 
             self.update_target(chord)
@@ -150,9 +149,7 @@ class Player(InstructionGroup):
             return False
         currentBeat = self.ticker.getRelativeTick()/(480)
         targetBeat = self.targetGem.beat
-        if abs(currentBeat - targetBeat) < self.slackWin:
-            # if chord == str(gem.get_chord()):
-            #     hit = True
+        if abs(currentBeat - targetBeat) < self.slackWin/2:
             self.targetGem.on_hit()
             return True
         return False

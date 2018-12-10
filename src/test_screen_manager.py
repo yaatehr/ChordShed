@@ -9,6 +9,7 @@
 
 import sys
 sys.path.append('..')
+import mido
 
 from common.core import *
 from common.audio import *
@@ -29,6 +30,8 @@ from kivy.uix.button import Button
 from kivy.graphics.instructions import InstructionGroup
 from kivy.graphics import Color, Ellipse, Line, Rectangle, Mesh
 from kivy.graphics import PushMatrix, PopMatrix, Translate, Scale, Rotate
+from src.pianotutor import KeyboardGui
+from src.notedetector import NoteDetector
 
 #from test.main import MainWidget as GameScreen
 
@@ -76,21 +79,30 @@ def create_dropdown(options, width, height, pos):
 
 
 class RootWidget(BaseWidget) :
+    midiInput = None
+    mixer = Mixer()
+    playerSynth = Synth('../data/FluidR3_GM.sf2')
     def __init__(self):
         super(RootWidget, self).__init__()
-
+        # config
         self.audio = Audio(2)
+        self.audio.set_generator(self.mixer)
+        self.mixer.add(self.playerSynth)
+        self.note_detector = NoteDetector(self.playerSynth)
+
         self.home = HomeScreen()
-        
+
         self.home_button = ButtonWidget((0, Window.height-40), '../images/home.png', self.switchScreen, 'home')
         self.info = ButtonWidget((40, Window.height-40), '../images/information.png', self.switchScreen, 'info')
+        self.calibrate = ButtonWidget((80, Window.height-40), '../images/piano.png', self.switchScreen, 'calibrate')
         
-        self.add_widget(self.home_button)
 
+
+
+        self.add_widget(self.home_button)
         # save state and initialize home screen
         self.widget = None
         self.switchScreen('home')
-    
 
     def switchScreen(self, screenName):
         '''
@@ -123,13 +135,17 @@ class RootWidget(BaseWidget) :
         Returns: Widget() or None
         '''
         if screenName == 'game':
-            return Game(self.audio)
+            if not self._has_midi_input():
+                return self.home
+            return Game(noteDetector=self.noteDetector, mixer=self.mixer)
         elif screenName == 'score':
             return ScoreCard()
         elif screenName == 'home':
             return self.home
         elif screenName == 'info':
             return InformationPage()
+        elif screenName == 'calibrate':
+            return PianoCalibrator()
         print('No screen named:', screenName)
         return self.home
 
@@ -172,6 +188,7 @@ class RootWidget(BaseWidget) :
 
     def on_update(self):
         '''Returns: None'''
+        self.audio.on_update()
         for child in self.children:
             try:
                 child.on_update()
@@ -179,6 +196,22 @@ class RootWidget(BaseWidget) :
                 pass
 
 
+    def _initialize_controller(self):
+        if self._has_midi_input():
+            return True
+        inport = None
+        try: 
+            inport = mido.open_input(virtual=False, callback=self.detector.callback)
+            print('port initialized')
+        except Exception as e:
+            return False
+            print('no input attached ', e)
+        self.midiInput = inport
+        return True
+    
+
+    def _has_midi_input(self):
+        return self.midiInput is not None
 
 
 
@@ -357,6 +390,38 @@ class InformationPage(Widget):
             return False
 
 
+
+class PianoCalibrator(Widget):
+    def __init__(self):
+        super(PianoCalibrator, self).__init__(size=(Window.width, Window.height))
+
+        cpos = (self.width//2, self.height//2)
+        csize = (self.width, self.height)
+        bg = CRectangle(cpos=cpos, csize=csize)
+
+        self.canvas.add(Color(.3,.3,.3))
+        self.canvas.add(bg)
+        self.gui = KeyboardGui(self.parent.detector)
+        self.canvas.add(self.gui)
+        self.calibration_step = 0
+
+
+        self.info = topleft_label()
+        self.add_widget(self.info)
+
+    def on_update(self):
+        self.info.text = 'Piano Calibration'
+        self.info.text += '\t\t\Press "1" to return home'
+
+        if self.calibration_step == 0:
+            if self.parent._had_midi_input():
+                self.info.text += '\n\n No Keyboard Connected - Press c to connect'
+            else:
+                self.info.text += '\n\n Keyboard Connected - Press SPACE to begin calibration'
+        elif self.calibration_step == 1:
+            self.info.text += '\n\n Press the lowest button on your keyboard'
+        elif self.calibration_step == 2:
+            pass
 
 
 ###########################################################

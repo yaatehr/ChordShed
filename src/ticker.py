@@ -19,7 +19,7 @@ class Ticker(object):
     This class assumes quarter notes as beats.
     becase every loop in this game is 4 measures, we will assume a loop to last 16 beats.  (4/4)
     '''
-    bpm = 120
+    bpm = 60
     numRepeats = 3
     measuresPerCall = 1
     channel = 0
@@ -28,14 +28,12 @@ class Ticker(object):
     noteDuration = 1
     nowBarHeight = Window.height//2
     endBarTicks = kTicksPerQuarter*.5
-
     barLenTicks = kTicksPerQuarter*4 + endBarTicks
     gemRadius = 100
     padding = gemRadius + 50
 
     def __init__(self, songPattern, key, clock):
         self.slack_timout = beats_to_time(.5, self.bpm)
-
         self.gems, self.bars = self._initialize_bars(songPattern, key)
         self.synth = Synth('../data/FluidR3_GM.sf2')
         totalBeats = self.measuresPerCall*self.numRepeats*len(self.bars)*4
@@ -55,12 +53,10 @@ class Ticker(object):
         self.bar_tick = 0
         self.bar_index = 0
     
-    
     def reset(self):
         #TODO
         for i in range(len(self.num_bars)):
             self.clear_bar(i)
-
         self.bar_index = 0
     
     def create_bar(self, barIndex):
@@ -87,41 +83,33 @@ class Ticker(object):
     def getTargetGem(self):
         tick = self.getRelativeTick()
         beatApprox = (tick/self.barLenTicks)*4
-
         #find gem by tick
         targetGem = None
-
         minDist = 9999999999
         for gem in self.active_gems:
             if gem.hit or gem.miss:
                 # print("skipping hit gem (target) ", tick)
                 continue
-            # print(gem.beat)
             gemDist = min(abs(gem.beat - beatApprox), abs(beatApprox - gem.beat))
-            # print(gemDist)
             if  gemDist < minDist:
                 minDist = gemDist
                 targetGem = gem
-        
         # print("minimum dist: ", minDist)
         # print("targetGem: ", gem.beat)
         # print("beat approx: ", beatApprox)
-            
         return targetGem
 
     def on_update(self):
         self.scheduler.on_update()
         tick = self.getTick()
-
         ticksEllapsed = (tick - self.bar_tick)%(self.barLenTicks*4)
-
         if ticksEllapsed <= self.barLenTicks:
             return "call"
         elif ticksEllapsed <= self.numRepeats*self.barLenTicks:
             return "response"
         else:
-            print("tick %f, ticksEll %f, barTick %f, barLen %f " % (tick, ticksEllapsed, self.bar_tick, self.barLenTicks))
-            print('nextStatus')
+            # print("tick %f, ticksEll %f, barTick %f, barLen %f " % (tick, ticksEllapsed, self.bar_tick, self.barLenTicks))
+            # print('nextStatus')
             return "next"
 
 
@@ -133,7 +121,6 @@ class Ticker(object):
             numGems = len(bar)
             assert numGems > 1
             w = (Window.width)//5
-            # h = Window.height//len(gems)
             x = self.padding
             y = self.nowBarHeight
             chords_and_ticks = []
@@ -144,8 +131,7 @@ class Ticker(object):
                 chords_and_ticks.append((chord, b[1]))
                 x = w*b[1]
                 gem = Gem(chord, (x,y), self.gemRadius, self.slack_timout, b[1])
-                gems.append(gem)
-                
+                gems.append(gem)     
 
             chord_bars.append(chords_and_ticks)
             gem_bars.append(gems)
@@ -159,7 +145,7 @@ class Ticker(object):
         for i in range(self.playQueues):
             for chord, beat in bar:
                 tick = bar_tick + beat*kTicksPerQuarter
-                print('audio ', tick)
+                # print('audio ', tick)
                 self.on_commands.append(self.scheduler.post_at_tick(self._playChord, tick, chord))
                 self.off_commands.append(self.scheduler.post_at_tick(self._endChord, tick+kTicksPerQuarter*self.noteDuration, chord))
             bar_tick += self.barLenTicks
@@ -172,7 +158,7 @@ class Ticker(object):
             c.execute()
 
     def _initializeBarGems(self, barIndex):
-        slackWinOffset = quantize_tick_up(float(self.slack_timout)*2*kTicksPerQuarter)
+        slackWinOffset = quantize_tick_up(float(self.slack_timout)/2*kTicksPerQuarter)
         bar_tick = int(self.bar_tick)
         bar = self.gems[barIndex]
         for i in range(self.numRepeats):
@@ -181,12 +167,8 @@ class Ticker(object):
                 if i > 0:
                     self.gem_commands.append(self.scheduler.post_at_tick(self._startGemTimer, tick - slackWinOffset, gem))
                     ticks_to_time(tick - slackWinOffset, self.bpm)
-                    print(tick)
             bar_tick += self.barLenTicks
-            print('bar tick ', bar_tick)
             self.gem_commands.append(self.scheduler.post_at_tick(self._onCompleteMeasure, bar_tick))
-
-
 
     def _refreshBarGems(self):
         for gem in self.active_gems:
@@ -200,26 +182,18 @@ class Ticker(object):
         
     def _onCompleteMeasure(self, tick, temp=None):
         if self.on_update() == "call":
-            # print('resetting gems')
-            # [gem.activate() for gem in self.active_gems]
-            # self.bar_tick += self.endBarTicks #incrmemet bar to offset
             return
-
 
         allHit = True
         for gem in self.active_gems:
             allHit = allHit and gem.hit
         if allHit:
-            # self.increment_bar()
+            self.increment_bar()
             print('increment bar')
         else:
             print("measure over, resetting gems - %f" % self.getRelativeTick())
             self.catch_passes(True)
             self._refreshBarGems()
-
-        # self.bar_tick += self.endBarTicks #incrmemet bar to offset
-
-
 
     def _startGemTimer(self, tick, gem):
         ''' starts the gem timer'''

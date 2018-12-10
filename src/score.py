@@ -68,7 +68,7 @@ class ScoreCard(object):
 
         
     def addGem(self, gem, wasHit):
-        chord = gem.chord.toString()
+        chord = gem.chord.__str__()
         hit = 0
         total = 0
         if chord in self.gemHits.keys():

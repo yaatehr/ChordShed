@@ -28,12 +28,8 @@ class NoteDetector(object):
         self.onInput = None
         self.octaveBlind = True
 
-
-        # self.song = MidiFile('./major_chords.mid')
-
     def updateTargetChord(self, chord): #to be called from player class
         self.targetChord = chord
-        
         self.targetMidi = chord._getMidiTones()
         self.reset()        
         #TODO add clearing logic and refresh notes (we still want the mto decay)
@@ -41,22 +37,11 @@ class NoteDetector(object):
     def reset(self):
         self.playingNotes.clear()
 
-    def initializeChords(self):
-        roots = createKeyVariants([60, 64, 67])
-        first_inversions = createKeyVariants([64, 67, 72])
-        second_inversions = createKeyVariants([67, 72, 76])
-        chordDict = dict()
-        for i in range(len(roots)):
-            chordDict[ALL_KEYS[i]] = [roots[i], first_inversions[i], second_inversions[i]]
-        return chordDict
-
     def initializePlayer(self, player): #to initialize player class callbacks
         self.onHit = player.on_hit
         self.onInput = player.on_input
 
     def callback(self, message):
-        # print(message)
-
         if message.type == 'note_off':
             if message.note in self.playingNotes.keys():
                 start = self.playingNotes.pop(message.note)
@@ -93,9 +78,6 @@ class NoteDetector(object):
                         return self.onHit()
                 elif self.onInput:
                     return self.onInput(message.note, correctNote)
-
-
-
     
     def getActiveNotes(self):
         correctNotes = []
@@ -107,11 +89,6 @@ class NoteDetector(object):
                 incorrectNotes.append(note)
         # print(correctNotes, incorrectNotes)
         return correctNotes, incorrectNotes
-
-    def setDetectingKey(self, key):
-        if key not in ALL_KEYS:
-            return 
-        self.detectingKey = key
 
     def checkForChords(self):
         notes = list(self.playingNotes.values())

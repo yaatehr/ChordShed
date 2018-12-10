@@ -49,61 +49,36 @@ defaultKey = Key()
 
 class MainWidget(BaseWidget) :
     playing = False
-    midiInput = None
     info = topleft_label()
-    mixer = Mixer()
-    playerSynth = Synth('../data/FluidR3_GM.sf2')
 
-    def __init__(self, audio, masterPattern=patterns, key=defaultKey, fileName='testoutput.txt', callback=None):
+    def __init__(self, masterPattern=patterns, key=defaultKey, fileName='testoutput.txt', noteDetector=None, mixer=None, callback=None):
         super(MainWidget, self).__init__()
         '''
         The main game instance, the pattern and keys are loaded before the screen is initialized
         ALL graphical components are controlled by the clock (update isnt' run if clock isn't playing)
          '''
-        self.audio = audio # we will pass in an audio class when necessary
-
+        self.mixer = mixer
         self.pattern = masterPattern
         self.key = key
 
-        #Audio
-        self.audio.set_generator(self.mixer)
-        self.mixer.add(self.playerSynth)
+        #Audio     
         self.clock = GameClock()
 
-        nd = NoteDetector(self.playerSynth)
-        self.gui = KeyboardGui(nd)
+        self.gui = KeyboardGui(noteDetector)
 
-        self.detector = nd
+        self.detector = noteDetector
         self.ticker = Ticker(self.pattern, key, self.clock)
         self.mixer.add(self.ticker.synth)
-        self.player = Player(self.ticker, self.clock, nd.updateTargetChord)
+        self.player = Player(self.ticker, self.clock, noteDetector.updateTargetChord)
         self.ticker.initialize_callbacks(self.player.increment_bar, self.player.catch_passes)
         self.detector.initializePlayer(self.player)
         self.canvas.add(self.player)
         self.canvas.add(self.gui)
-        
         #midi input state
         self.info.parent = None # make sure the label widget does not have a parent
         self.add_widget(self.info)
         self.switchScreens = callback
 
-    
-    def initialize_controller(self):
-        if self.hasMidiInput():
-            return True
-        inport = None
-        try: 
-            inport = mido.open_input(virtual=False, callback=self.detector.callback)
-            print('port initialized')
-        except Exception as e:
-            return False
-            print('no input attached ', e)
-        self.midiInput = inport
-        return True
-    
-
-    def hasMidiInput(self):
-        return self.midiInput is not None
     
     def on_key_down(self, keycode, modifiers):
         if keycode[1] == 't':
@@ -137,14 +112,12 @@ class MainWidget(BaseWidget) :
     def on_update(self) :
         if self.playing:
             self.player.on_update()
-        self.audio.on_update()
         self.gui.on_update()
         # check for midi input and add onscreen indicator
 
-        if self.hasMidiInput():
-            self.info.text = "\nKeyboard Connected"
-        else:
-            self.info.text = "\nNO Keyboard Found"
+        if not self.parent._has_midi_input():
+            self.info.text = "No Keyboard Connected"
+
 
 
         # update personal clock
